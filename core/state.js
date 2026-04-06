@@ -12,6 +12,10 @@ export const state = {
   editingBodegaId: '',
   editingClientId: '',
   historyQuery: '',
+  reportQuery: '',
+  reportPayment: '',
+  reportFrom: '',
+  reportTo: '',
   cart: { items: [], cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0 },
   lastSale: ''
 };
