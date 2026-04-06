@@ -17,3 +17,6 @@ Incluye:
 - Ventas v1
 - Inventario v1
 - Bodega v1 con surtido a inventario
+
+
+V6: Configuración v1 agregada (branding, ticket, categorías, pagos, respaldo/restauración JSON).
