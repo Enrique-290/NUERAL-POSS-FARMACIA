@@ -38,4 +38,13 @@ export function seedData() {
       { id: 'bod3', sku: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', stock: 30, stockMinimo: 12, lote: 'JAR-B2402', caducidad: '2026-07-20' }
     ]);
   }
+
+
+  if (!load(STORAGE_KEYS.CLIENTS, null)) {
+    save(STORAGE_KEYS.CLIENTS, [
+      { id: 'cli1', nombre: 'Ana Ruiz', telefono: '5512345678', email: 'ana@correo.com', tipoCliente: 'Frecuente', fechaAlta: '2026-03-18', activo: true, direccion: 'Col. Centro', notas: 'Prefiere aviso por WhatsApp.' },
+      { id: 'cli2', nombre: 'Clínica San Pedro', telefono: '5587654321', email: 'compras@sanpedro.mx', tipoCliente: 'Mayoreo', fechaAlta: '2026-02-10', activo: true, direccion: 'Av. Reforma 120', notas: 'Compra cajas completas cada quincena.' },
+      { id: 'cli3', nombre: 'Jorge Martínez', telefono: '5544400011', email: '', tipoCliente: 'Mostrador', fechaAlta: '2026-04-01', activo: true, direccion: '', notas: 'Cliente nuevo.' }
+    ]);
+  }
 }

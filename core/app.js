@@ -9,7 +9,7 @@ import { renderVentas, bindVentas } from '../modules/ventas/index.js';
 import { renderInventario, bindInventario } from '../modules/inventario/index.js';
 import { renderBodega, bindBodega } from '../modules/bodega/index.js';
 import { renderUsers, bindUsers } from '../modules/users/index.js';
-import { renderModule as renderClientes } from '../modules/clientes/index.js';
+import { renderClientes, bindClientes } from '../modules/clientes/index.js';
 import { renderModule as renderHistorial } from '../modules/historial/index.js';
 import { renderModule as renderReportes } from '../modules/reportes/index.js';
 import { renderModule as renderConfiguracion } from '../modules/configuracion/index.js';
@@ -134,6 +134,7 @@ function openRoute(route) {
   state.mobileMenu = false;
   if (route !== 'inventario') state.editingInventoryId = '';
   if (route !== 'bodega') state.editingBodegaId = '';
+  if (route !== 'clientes') state.editingClientId = '';
   render();
 }
 
@@ -145,6 +146,7 @@ function bindAppEvents() {
   if (state.route === 'ventas') bindVentas(render);
   if (state.route === 'inventario') bindInventario(render);
   if (state.route === 'bodega') bindBodega(render);
+  if (state.route === 'clientes') bindClientes(render);
   if (state.route === 'users_admin') bindUsers(render);
 }
 

@@ -6,9 +6,11 @@ export const state = {
   salesQuery: '',
   inventoryQuery: '',
   bodegaQuery: '',
+  clientsQuery: '',
   selectedManagedUserId: '',
   editingInventoryId: '',
   editingBodegaId: '',
+  editingClientId: '',
   cart: { items: [], cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0 },
   lastSale: ''
 };
