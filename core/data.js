@@ -16,6 +16,14 @@ export function seedData() {
       { id: 'usr_caja', nombre: 'Caja Mostrador', username: 'caja', password: '1234', role: 'Caja', active: true, permissions: { ...defaultPermissions(false), dashboard: true, ventas: true, clientes: true, historial: true } }
     ]);
   }
+  else {
+    const migrated = users.map(u => ({
+      ...u,
+      permissions: { ...defaultPermissions(u.role === "Administrador"), ...(u.permissions || {}) }
+    }));
+    save(STORAGE_KEYS.USERS, migrated);
+  }
+
 
   if (!load(STORAGE_KEYS.CONFIG, null)) {
     save(STORAGE_KEYS.CONFIG, { appName: 'Neural POS Farmacia', footerText: 'Hecho por Neural Apps', web: { storeName: 'Neural POS Farmacia', heroTitle: 'Tu farmacia cerca de ti', heroSubtitle: 'Medicamentos, cuidado diario y pedidos por WhatsApp.', whatsapp: '525500000000', showCart: true } });
@@ -30,6 +38,17 @@ export function seedData() {
       { id: 'inv5', sku: '75020005', barcode: '75020005', nombre: 'Vitamina C 1 g', categoria: 'Vitaminas', tipo: 'Original', costo: 61, precio: 89, stock: 14, stockMinimo: 7, lote: 'VIT-2409', caducidad: '2026-03-22', visibleWeb: true, precioWeb: 92, categoriaWeb: 'Vitaminas', destacadoWeb: false }
     ]);
   }
+  else {
+    const migratedInventory = load(STORAGE_KEYS.INVENTORY, []).map(item => ({
+      ...item,
+      visibleWeb: Boolean(item.visibleWeb),
+      precioWeb: Number(item.precioWeb ?? item.precio ?? 0),
+      categoriaWeb: item.categoriaWeb || item.categoria || 'General',
+      destacadoWeb: Boolean(item.destacadoWeb)
+    }));
+    save(STORAGE_KEYS.INVENTORY, migratedInventory);
+  }
+
 
   if (!load(STORAGE_KEYS.BODEGA, null)) {
     save(STORAGE_KEYS.BODEGA, [
