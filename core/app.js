@@ -1,35 +1,115 @@
-import { MODULES } from './constants.js';
-import { seedData } from './data.js';
+import { MODULES, STORAGE_KEYS } from './constants.js';
 import { state } from './state.js';
-import { login, restoreSession, logout } from './auth.js';
-import { canAccess } from './guards.js';
-import { renderLogin, renderShell } from './layout.js';
-import { moduleLoaders } from './router.js';
-import { showToast } from './ui.js';
+import { seedData } from './data.js';
+import { load } from './storage.js';
+import { login, logout, restoreSession } from './auth.js';
+import { initials, showToast } from './utils.js';
+import { renderDashboard } from '../modules/dashboard/index.js';
+import { renderVentas, bindVentas } from '../modules/ventas/index.js';
+import { renderInventario, bindInventario } from '../modules/inventario/index.js';
+import { renderBodega, bindBodega } from '../modules/bodega/index.js';
+import { renderUsers, bindUsers } from '../modules/users/index.js';
+import { renderModule as renderClientes } from '../modules/clientes/index.js';
+import { renderModule as renderHistorial } from '../modules/historial/index.js';
+import { renderModule as renderReportes } from '../modules/reportes/index.js';
+import { renderModule as renderConfiguracion } from '../modules/configuracion/index.js';
+import { renderModule as renderMayoreoDashboard } from '../modules/mayoreo_dashboard/index.js';
+import { renderModule as renderMayoreoVentas } from '../modules/mayoreo_ventas/index.js';
+import { renderModule as renderMayoreoInventario } from '../modules/mayoreo_inventario/index.js';
+import { renderModule as renderMayoreoClientes } from '../modules/mayoreo_clientes/index.js';
+import { renderModule as renderMayoreoHistorial } from '../modules/mayoreo_historial/index.js';
+import { renderModule as renderMayoreoReportes } from '../modules/mayoreo_reportes/index.js';
 
 const root = document.getElementById('root');
 
-function firstAllowedRoute() {
-  return MODULES.find(m => canAccess(state.user, m.key))?.key || 'dashboard';
+function canAccess(moduleKey) {
+  return !!state.user?.permissions?.[moduleKey];
 }
 
-async function bindGlobalEvents() {
-  document.getElementById('logoutBtn')?.addEventListener('click', () => {
-    logout();
-    state.user = null;
-    render();
-  });
-  document.getElementById('menuToggle')?.addEventListener('click', () => { state.menuCollapsed = !state.menuCollapsed; render(); });
-  document.getElementById('mobileOpen')?.addEventListener('click', () => { state.mobileMenu = !state.mobileMenu; render(); });
-  document.querySelectorAll('[data-route]').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.route)));
+function allowedModules() {
+  return MODULES.filter(m => canAccess(m.key));
 }
 
-async function navigate(route) {
-  if (!canAccess(state.user, route)) return showToast('No tienes permiso para entrar a este módulo.');
-  state.route = route;
-  state.mobileMenu = false;
-  state.editingInventoryId = '';
-  await render();
+function pageContent() {
+  switch (state.route) {
+    case 'dashboard': return renderDashboard();
+    case 'ventas': return renderVentas();
+    case 'inventario': return renderInventario();
+    case 'bodega': return renderBodega();
+    case 'users_admin': return renderUsers();
+    case 'clientes': return renderClientes();
+    case 'historial': return renderHistorial();
+    case 'reportes': return renderReportes();
+    case 'configuracion': return renderConfiguracion();
+    case 'mayoreo_dashboard': return renderMayoreoDashboard();
+    case 'mayoreo_ventas': return renderMayoreoVentas();
+    case 'mayoreo_inventario': return renderMayoreoInventario();
+    case 'mayoreo_clientes': return renderMayoreoClientes();
+    case 'mayoreo_historial': return renderMayoreoHistorial();
+    case 'mayoreo_reportes': return renderMayoreoReportes();
+    default: return renderDashboard();
+  }
+}
+
+function renderLogin() {
+  return `
+    <div class="login-shell">
+      <div class="login-card">
+        <section class="login-hero">
+          <div class="brand-logo">NP</div>
+          <h1>Neural POS Farmacia</h1>
+          <p>Base modular por carpetas con login, permisos, ventas, inventario y bodega v1.</p>
+          <div class="login-list">
+            <div>🔐 Acceso por usuario y contraseña</div>
+            <div>🧩 Permisos por módulo controlados por admin</div>
+            <div>📦 Inventario y bodega separados</div>
+            <div>🧠 Hecho por Neural Apps</div>
+          </div>
+        </section>
+        <section class="login-form">
+          <div><h2 style="margin:0 0 6px;">Acceso al sistema</h2><div class="muted">Entra con uno de los usuarios de prueba.</div></div>
+          <div class="error" id="loginError">Usuario o contraseña incorrectos.</div>
+          <div class="input-group"><label for="username">Usuario</label><input id="username" placeholder="Ej. admin" autocomplete="username" /></div>
+          <div class="input-group"><label for="password">Contraseña</label><input id="password" type="password" placeholder="••••" autocomplete="current-password" /></div>
+          <button class="btn btn-primary" id="loginBtn">Entrar</button>
+          <div class="hint">Admin: <b>admin / 1234</b><br>Caja: <b>caja / 1234</b></div>
+        </section>
+      </div>
+      <div class="login-footer">Hecho por Neural Apps</div>
+    </div>
+  `;
+}
+
+function sidebarMarkup() {
+  const modules = allowedModules();
+  const groups = [...new Set(modules.map(m => m.group))];
+  return `
+    <aside class="sidebar ${state.mobileMenu ? 'open' : ''}">
+      <div class="brand"><div class="brand-logo">NP</div><div class="brand-copy"><h1>Neural POS Farmacia</h1><p>Panel principal</p></div></div>
+      <button class="menu-toggle" id="menuToggle">☰ <span class="label">Menú compacto</span></button>
+      <div class="user-card"><div class="avatar">${initials(state.user.nombre)}</div><div class="meta"><b>${state.user.nombre}</b><small>${state.user.role}</small></div></div>
+      ${groups.map(group => `<div class="menu-group"><div class="menu-group-title">${group}</div>${modules.filter(m => m.group === group).map(mod => `<button class="menu-item ${state.route === mod.key ? 'active' : ''}" data-route="${mod.key}"><span class="icon">${mod.icon}</span><span class="label">${mod.label}</span></button>`).join('')}</div>`).join('')}
+      <div class="sidebar-footer">Hecho por Neural Apps</div>
+    </aside>
+  `;
+}
+
+function appShell() {
+  const config = load(STORAGE_KEYS.CONFIG, { appName: 'Neural POS Farmacia', footerText: 'Hecho por Neural Apps' });
+  const currentModule = MODULES.find(m => m.key === state.route);
+  return `
+    <div class="app ${state.menuCollapsed ? 'menu-collapsed' : ''}">
+      ${sidebarMarkup()}
+      <div class="main">
+        <header class="topbar">
+          <div><h2>${currentModule?.label || config.appName}</h2><p>${config.appName}</p></div>
+          <div class="top-actions"><div class="pill">${state.user.username}</div><button class="btn btn-secondary" id="mobileOpen">☰</button><button class="btn btn-primary" id="logoutBtn">Salir</button></div>
+        </header>
+        ${pageContent()}
+        <footer class="app-footer">${config.footerText}</footer>
+      </div>
+    </div>
+  `;
 }
 
 function bindLoginEvents() {
@@ -37,32 +117,48 @@ function bindLoginEvents() {
   const userInput = document.getElementById('username');
   const passInput = document.getElementById('password');
   const error = document.getElementById('loginError');
-  const submit = async () => {
+  const submit = () => {
     const user = login(userInput.value.trim(), passInput.value);
     if (!user) { error.style.display = 'block'; return; }
     state.user = user;
-    state.route = firstAllowedRoute();
-    await render();
+    state.route = canAccess('dashboard') ? 'dashboard' : allowedModules()[0]?.key || 'dashboard';
+    render();
   };
   btn?.addEventListener('click', submit);
   [userInput, passInput].forEach(el => el?.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); }));
 }
 
-async function render() {
+function openRoute(route) {
+  if (!canAccess(route)) return showToast('No tienes permiso para entrar a este módulo.');
+  state.route = route;
+  state.mobileMenu = false;
+  if (route !== 'inventario') state.editingInventoryId = '';
+  if (route !== 'bodega') state.editingBodegaId = '';
+  render();
+}
+
+function bindAppEvents() {
+  document.getElementById('logoutBtn')?.addEventListener('click', () => { logout(); state.user = null; render(); });
+  document.getElementById('menuToggle')?.addEventListener('click', () => { state.menuCollapsed = !state.menuCollapsed; render(); });
+  document.getElementById('mobileOpen')?.addEventListener('click', () => { state.mobileMenu = !state.mobileMenu; render(); });
+  document.querySelectorAll('[data-route]').forEach(btn => btn.addEventListener('click', () => openRoute(btn.dataset.route)));
+  if (state.route === 'ventas') bindVentas(render);
+  if (state.route === 'inventario') bindInventario(render);
+  if (state.route === 'bodega') bindBodega(render);
+  if (state.route === 'users_admin') bindUsers(render);
+}
+
+function render() {
   if (!state.user) {
     root.innerHTML = renderLogin();
     bindLoginEvents();
     return;
   }
-  const loader = moduleLoaders[state.route] || moduleLoaders.dashboard;
-  const mod = await loader();
-  const pageHtml = mod.render();
-  root.innerHTML = renderShell(state, pageHtml);
-  await bindGlobalEvents();
-  if (typeof mod.bind === 'function') mod.bind({ rerender: render, navigate });
+  root.innerHTML = appShell();
+  bindAppEvents();
 }
 
-seedData(MODULES);
+seedData();
 state.user = restoreSession();
-if (state.user) state.route = firstAllowedRoute();
+if (state.user) state.route = canAccess('dashboard') ? 'dashboard' : allowedModules()[0]?.key || 'dashboard';
 render();

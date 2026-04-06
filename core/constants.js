@@ -2,7 +2,8 @@ export const STORAGE_KEYS = {
   USERS: 'neural_pos_users',
   SESSION: 'neural_pos_session',
   CONFIG: 'neural_pos_config',
-  INVENTORY: 'neural_pos_inventory'
+  INVENTORY: 'neural_pos_inventory',
+  BODEGA: 'neural_pos_bodega'
 };
 
 export const MODULES = [

@@ -1,26 +1,19 @@
-import { STORAGE_KEYS } from './constants.js';
+import { STORAGE_KEYS, MODULES } from './constants.js';
 import { load, save } from './storage.js';
 
-export function defaultPermissions(modules, all = false) {
-  return modules.reduce((acc, mod) => {
+export function defaultPermissions(all = false) {
+  return MODULES.reduce((acc, mod) => {
     acc[mod.key] = all;
     return acc;
   }, {});
 }
 
-export function seedData(modules) {
+export function seedData() {
   const users = load(STORAGE_KEYS.USERS, []);
   if (!users.length) {
     save(STORAGE_KEYS.USERS, [
-      {
-        id: 'usr_admin', nombre: 'Administrador General', username: 'admin', password: '1234',
-        role: 'Administrador', active: true, permissions: defaultPermissions(modules, true)
-      },
-      {
-        id: 'usr_caja', nombre: 'Caja Mostrador', username: 'caja', password: '1234',
-        role: 'Caja', active: true,
-        permissions: { ...defaultPermissions(modules, false), dashboard: true, ventas: true, clientes: true, historial: true }
-      }
+      { id: 'usr_admin', nombre: 'Administrador General', username: 'admin', password: '1234', role: 'Administrador', active: true, permissions: defaultPermissions(true) },
+      { id: 'usr_caja', nombre: 'Caja Mostrador', username: 'caja', password: '1234', role: 'Caja', active: true, permissions: { ...defaultPermissions(false), dashboard: true, ventas: true, clientes: true, historial: true } }
     ]);
   }
 
@@ -35,6 +28,14 @@ export function seedData(modules) {
       { id: 'inv3', sku: '75020003', barcode: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', tipo: 'Original', costo: 58, precio: 96, stock: 12, stockMinimo: 6, lote: 'JAR-2402', caducidad: '2026-04-20' },
       { id: 'inv4', sku: '75020004', barcode: '75020004', nombre: 'Loratadina 10 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 31, precio: 49, stock: 25, stockMinimo: 9, lote: 'LOR-2407', caducidad: '2027-01-08' },
       { id: 'inv5', sku: '75020005', barcode: '75020005', nombre: 'Vitamina C 1 g', categoria: 'Vitaminas', tipo: 'Original', costo: 61, precio: 89, stock: 14, stockMinimo: 7, lote: 'VIT-2409', caducidad: '2026-03-22' }
+    ]);
+  }
+
+  if (!load(STORAGE_KEYS.BODEGA, null)) {
+    save(STORAGE_KEYS.BODEGA, [
+      { id: 'bod1', sku: '75020001', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', stock: 120, stockMinimo: 40, lote: 'PAR-B2401', caducidad: '2026-12-10' },
+      { id: 'bod2', sku: '75020002', nombre: 'Omeprazol 20 mg', categoria: 'Original', stock: 60, stockMinimo: 25, lote: 'OME-B2405', caducidad: '2026-09-15' },
+      { id: 'bod3', sku: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', stock: 30, stockMinimo: 12, lote: 'JAR-B2402', caducidad: '2026-07-20' }
     ]);
   }
 }

@@ -1,11 +1,19 @@
-Neural POS Farmacia
+Neural POS Farmacia - Modular v2
 
-Estructura A:
-- index.html principal
-- styles/main.css global
-- core separado
-- modules por carpeta
-
-Usuarios de prueba:
+Credenciales:
 - admin / 1234
 - caja / 1234
+
+Estructura tipo A:
+- index.html principal
+- styles/main.css
+- core/*
+- modules/*
+
+Incluye:
+- Login
+- Permisos por módulo
+- Dashboard
+- Ventas v1
+- Inventario v1
+- Bodega v1 con surtido a inventario

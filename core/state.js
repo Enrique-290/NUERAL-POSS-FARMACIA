@@ -3,28 +3,12 @@ export const state = {
   user: null,
   menuCollapsed: false,
   mobileMenu: false,
-  selectedManagedUserId: '',
   salesQuery: '',
   inventoryQuery: '',
+  bodegaQuery: '',
+  selectedManagedUserId: '',
   editingInventoryId: '',
-  lastSale: '',
-  cart: {
-    items: [],
-    cliente: 'Mostrador',
-    pago: 'Efectivo',
-    receta: '',
-    extraLabel: '',
-    extraAmount: 0
-  }
+  editingBodegaId: '',
+  cart: { items: [], cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0 },
+  lastSale: ''
 };
-
-export function emptyCart() {
-  return {
-    items: [],
-    cliente: 'Mostrador',
-    pago: 'Efectivo',
-    receta: '',
-    extraLabel: '',
-    extraAmount: 0
-  };
-}

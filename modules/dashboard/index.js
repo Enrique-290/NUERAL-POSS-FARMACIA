@@ -1,4 +1,4 @@
-export function render() {
+export function renderDashboard() {
   return `
     <div class="page">
       <section class="grid grid-4">
@@ -19,7 +19,7 @@ export function render() {
         </article>
         <article class="card">
           <h3>Resumen rápido</h3>
-          <p class="muted">Vista base para seguir conectando módulos reales.</p>
+          <p class="muted">Vista base modular para seguir creciendo el sistema.</p>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Hora</th><th>Folio</th><th>Cliente</th><th>Total</th><th>Pago</th></tr></thead>
@@ -32,7 +32,6 @@ export function render() {
           </div>
         </article>
       </section>
-    </div>`;
+    </div>
+  `;
 }
-
-export function bind() {}
