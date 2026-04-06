@@ -17,5 +17,8 @@ export const state = {
   reportFrom: '',
   reportTo: '',
   cart: { items: [], cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0 },
-  lastSale: ''
+  lastSale: '',
+  webQuery: '',
+  webCategory: 'Todas',
+  webCart: []
 };

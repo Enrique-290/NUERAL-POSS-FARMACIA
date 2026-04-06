@@ -18,16 +18,16 @@ export function seedData() {
   }
 
   if (!load(STORAGE_KEYS.CONFIG, null)) {
-    save(STORAGE_KEYS.CONFIG, { appName: 'Neural POS Farmacia', footerText: 'Hecho por Neural Apps' });
+    save(STORAGE_KEYS.CONFIG, { appName: 'Neural POS Farmacia', footerText: 'Hecho por Neural Apps', web: { storeName: 'Neural POS Farmacia', heroTitle: 'Tu farmacia cerca de ti', heroSubtitle: 'Medicamentos, cuidado diario y pedidos por WhatsApp.', whatsapp: '525500000000', showCart: true } });
   }
 
   if (!load(STORAGE_KEYS.INVENTORY, null)) {
     save(STORAGE_KEYS.INVENTORY, [
-      { id: 'inv1', sku: '75020001', barcode: '75020001', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 22, precio: 38, stock: 22, stockMinimo: 8, lote: 'PAR-2401', caducidad: '2026-11-20' },
-      { id: 'inv2', sku: '75020002', barcode: '75020002', nombre: 'Omeprazol 20 mg', categoria: 'Original', tipo: 'Original', costo: 46, precio: 74, stock: 9, stockMinimo: 10, lote: 'OME-2405', caducidad: '2026-05-15' },
-      { id: 'inv3', sku: '75020003', barcode: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', tipo: 'Original', costo: 58, precio: 96, stock: 12, stockMinimo: 6, lote: 'JAR-2402', caducidad: '2026-04-20' },
-      { id: 'inv4', sku: '75020004', barcode: '75020004', nombre: 'Loratadina 10 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 31, precio: 49, stock: 25, stockMinimo: 9, lote: 'LOR-2407', caducidad: '2027-01-08' },
-      { id: 'inv5', sku: '75020005', barcode: '75020005', nombre: 'Vitamina C 1 g', categoria: 'Vitaminas', tipo: 'Original', costo: 61, precio: 89, stock: 14, stockMinimo: 7, lote: 'VIT-2409', caducidad: '2026-03-22' }
+      { id: 'inv1', sku: '75020001', barcode: '75020001', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 22, precio: 38, stock: 22, stockMinimo: 8, lote: 'PAR-2401', caducidad: '2026-11-20', visibleWeb: true, precioWeb: 40, categoriaWeb: 'Dolor y fiebre', destacadoWeb: true },
+      { id: 'inv2', sku: '75020002', barcode: '75020002', nombre: 'Omeprazol 20 mg', categoria: 'Original', tipo: 'Original', costo: 46, precio: 74, stock: 9, stockMinimo: 10, lote: 'OME-2405', caducidad: '2026-05-15', visibleWeb: true, precioWeb: 76, categoriaWeb: 'Estómago', destacadoWeb: false },
+      { id: 'inv3', sku: '75020003', barcode: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', tipo: 'Original', costo: 58, precio: 96, stock: 12, stockMinimo: 6, lote: 'JAR-2402', caducidad: '2026-04-20', visibleWeb: true, precioWeb: 99, categoriaWeb: 'Infantil', destacadoWeb: true },
+      { id: 'inv4', sku: '75020004', barcode: '75020004', nombre: 'Loratadina 10 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 31, precio: 49, stock: 25, stockMinimo: 9, lote: 'LOR-2407', caducidad: '2027-01-08', visibleWeb: false, precioWeb: 49, categoriaWeb: 'Alergias', destacadoWeb: false },
+      { id: 'inv5', sku: '75020005', barcode: '75020005', nombre: 'Vitamina C 1 g', categoria: 'Vitaminas', tipo: 'Original', costo: 61, precio: 89, stock: 14, stockMinimo: 7, lote: 'VIT-2409', caducidad: '2026-03-22', visibleWeb: true, precioWeb: 92, categoriaWeb: 'Vitaminas', destacadoWeb: false }
     ]);
   }
 

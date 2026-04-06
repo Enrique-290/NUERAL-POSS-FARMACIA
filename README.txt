@@ -20,3 +20,5 @@ Incluye:
 
 
 V6: Configuración v1 agregada (branding, ticket, categorías, pagos, respaldo/restauración JSON).
+
+- Página web v2 conectada a inventario, con productos publicables, precio web, categorías web, destacados y carrito preview con salida a WhatsApp.

@@ -17,6 +17,7 @@ export const MODULES = [
   { key: 'historial', label: 'Historial', icon: '🧾', group: 'Operación' },
   { key: 'reportes', label: 'Reportes', icon: '📊', group: 'Operación' },
   { key: 'configuracion', label: 'Configuración', icon: '⚙️', group: 'Operación' },
+  { key: 'pagina_web', label: 'Página web', icon: '🌐', group: 'Operación' },
   { key: 'mayoreo_dashboard', label: 'Dashboard mayoreo', icon: '📈', group: 'Mayoreo' },
   { key: 'mayoreo_ventas', label: 'Ventas mayoreo', icon: '🛒', group: 'Mayoreo' },
   { key: 'mayoreo_inventario', label: 'Inventario mayoreo', icon: '📦', group: 'Mayoreo' },

@@ -115,3 +115,27 @@ input, select, textarea { width:100%; border:1px solid var(--line); background:#
   .page { padding:14px; }
   .grid-4, .grid-3, .grid-2, .inventory-form-grid, .bodega-form-grid, .permissions-grid { grid-template-columns:1fr; }
 }
+
+
+.web-grid { grid-template-columns: 1.15fr .85fr; align-items: start; }
+.web-preview-shell { padding: 14px; }
+.web-phone { border: 1px solid var(--line); border-radius: 24px; background: linear-gradient(180deg,#ffffff,#f7fbff); padding: 14px; min-height: 720px; }
+.web-hero { background: linear-gradient(135deg, #d9ecff, #eef7ff); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
+.web-hero h3 { margin: 10px 0 8px; font-size: 1.35rem; }
+.web-hero p { margin: 0; color: var(--muted); }
+.web-badge { display:inline-flex; padding:6px 10px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#3976bd; font-size:.8rem; font-weight:700; }
+.web-hero-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+.web-controls { margin-top: 14px; display: grid; gap: 12px; }
+.web-categories { display:flex; gap:8px; flex-wrap:wrap; }
+.web-cat-btn { border:1px solid var(--line); background:#fff; color:var(--text); padding:9px 12px; border-radius:999px; cursor:pointer; }
+.web-cat-btn.active { background:#edf5ff; border-color:var(--line-strong); color:#3976bd; }
+.web-section-title { margin: 18px 0 10px; font-weight: 800; color: var(--text); }
+.web-products { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.web-card { border:1px solid var(--line); background:#fff; border-radius:18px; padding:14px; display:grid; gap:8px; }
+.web-card.featured { background: linear-gradient(180deg,#fdfefe,#f4f9ff); }
+.web-card-name { font-weight:800; }
+.web-price { font-size:1.15rem; font-weight:800; color:#3976bd; }
+.web-cart { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+.web-total { margin-top: 12px; display:flex; justify-content:space-between; font-size:1rem; }
+@media (max-width:1080px) { .web-grid { grid-template-columns: 1fr; } }
+@media (max-width:760px) { .web-products { grid-template-columns: 1fr; } }
