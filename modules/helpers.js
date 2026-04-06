@@ -1,0 +1,4 @@
+export function inventoryStatus(item){const today=new Date();const target=new Date(item.caducidad+'T00:00:00');const diff=Math.ceil((target-today)/(1000*60*60*24));if(diff<=0)return{label:'Vencido',className:'danger'};if(diff<=60)return{label:'Próximo',className:'warn'};return{label:'Vigente',className:'ok'};}
+export function stockStatus(item){return item.stock<=item.stockMinimo?{label:'Stock bajo',className:'danger'}:{label:'Stock ok',className:'soft-blue'};}
+export function card(title,val,meta=''){return `<article class="card"><div class="muted">${title}</div><div class="kpi-value">${val}</div><div class="kpi-meta">${meta}</div></article>`;}
+export function placeholder(title,text){return `<div class="page"><article class="card"><h3>${title}</h3><p class="muted">${text}</p></article></div>`;}

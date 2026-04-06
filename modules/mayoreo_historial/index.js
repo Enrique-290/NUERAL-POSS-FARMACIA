@@ -1,3 +1,6 @@
-export function renderModule() {
-  return             '<div class="page"><article class="card"><h3>mayoreo historial</h3><p class="muted">Módulo base listo para continuar en la siguiente etapa.</p></article></div>';
-}
+import { state } from '../../core/state.js';
+import { load } from '../../core/storage.js';
+import { STORAGE_KEYS } from '../../core/constants.js';
+import { card } from '../helpers.js';
+export function renderMayoreoHistorial(){const items=load(STORAGE_KEYS.MAYOREO_HISTORIAL,[]);const q=state.mayoreoHistorialQuery.trim().toLowerCase();const filtered=!q?items:items.filter(i=>i.folio.toLowerCase().includes(q)||i.cliente.toLowerCase().includes(q)||i.pago.toLowerCase().includes(q));const total=items.reduce((a,i)=>a+Number(i.total||0),0);return `<div class="page"><section class="grid grid-3">${card('Ventas mayoreo',items.length,'Historial separado')}${card('Total mayoreo','$'+total.toFixed(2),'Acumulado')}${card('Transferencias',items.filter(i=>i.pago==='Transferencia').length,'Conteo')}</section><article class="card"><div class="input-group" style="margin-bottom:16px"><label>Buscar</label><input id="mayHistSearch" value="${state.mayoreoHistorialQuery}" placeholder="Buscar mayoreo"></div><div class="table-wrap"><table><thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Pago</th><th>Total</th><th>Detalle</th></tr></thead><tbody>${filtered.map(i=>`<tr><td>${i.folio}</td><td>${new Date(i.fecha).toLocaleString()}</td><td>${i.cliente}</td><td>${i.pago}</td><td>$${Number(i.total).toFixed(2)}</td><td>${i.items.map(p=>`${p.nombre} x${p.cantidad}`).join(', ')}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">Sin ventas mayoreo aún.</td></tr>'}</tbody></table></div></article></div>`;}
+export function bindMayoreoHistorial(render){document.getElementById('mayHistSearch')?.addEventListener('input',e=>{state.mayoreoHistorialQuery=e.target.value;render();});}

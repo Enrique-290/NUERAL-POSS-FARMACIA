@@ -6,11 +6,5 @@ export function load(key, fallback = null) {
     return fallback;
   }
 }
-
-export function save(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-export function remove(key) {
-  localStorage.removeItem(key);
-}
+export function save(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+export function remove(key) { localStorage.removeItem(key); }
