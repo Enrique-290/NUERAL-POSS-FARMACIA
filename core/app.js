@@ -10,7 +10,7 @@ import { renderInventario, bindInventario } from '../modules/inventario/index.js
 import { renderBodega, bindBodega } from '../modules/bodega/index.js';
 import { renderUsers, bindUsers } from '../modules/users/index.js';
 import { renderClientes, bindClientes } from '../modules/clientes/index.js';
-import { renderModule as renderHistorial } from '../modules/historial/index.js';
+import { renderModule as renderHistorial, bindHistorial } from '../modules/historial/index.js';
 import { renderModule as renderReportes } from '../modules/reportes/index.js';
 import { renderModule as renderConfiguracion } from '../modules/configuracion/index.js';
 import { renderModule as renderMayoreoDashboard } from '../modules/mayoreo_dashboard/index.js';
@@ -58,7 +58,7 @@ function renderLogin() {
         <section class="login-hero">
           <div class="brand-logo">NP</div>
           <h1>Neural POS Farmacia</h1>
-          <p>Base modular por carpetas con login, permisos, ventas, inventario y bodega v1.</p>
+          <p>Base modular por carpetas con login, permisos, ventas, inventario, bodega, clientes e historial v1.</p>
           <div class="login-list">
             <div>🔐 Acceso por usuario y contraseña</div>
             <div>🧩 Permisos por módulo controlados por admin</div>
@@ -147,6 +147,7 @@ function bindAppEvents() {
   if (state.route === 'inventario') bindInventario(render);
   if (state.route === 'bodega') bindBodega(render);
   if (state.route === 'clientes') bindClientes(render);
+  if (state.route === 'historial') bindHistorial(render);
   if (state.route === 'users_admin') bindUsers(render);
 }
 

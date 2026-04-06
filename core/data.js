@@ -47,4 +47,14 @@ export function seedData() {
       { id: 'cli3', nombre: 'Jorge Martínez', telefono: '5544400011', email: '', tipoCliente: 'Mostrador', fechaAlta: '2026-04-01', activo: true, direccion: '', notas: 'Cliente nuevo.' }
     ]);
   }
+
+
+  if (!load(STORAGE_KEYS.SALES, null)) {
+    save(STORAGE_KEYS.SALES, [
+      { id: 'sale1', folio: 'V-240401', fecha: '2026-04-05T09:12:00', cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0, subtotal: 180, total: 180, items: [{ nombre: 'Paracetamol 500 mg', cantidad: 2, precio: 38 }, { nombre: 'Jarabe infantil', cantidad: 1, precio: 104 }] },
+      { id: 'sale2', folio: 'V-240402', fecha: '2026-04-05T10:24:00', cliente: 'Ana Ruiz', pago: 'Tarjeta', receta: 'receta_ana.jpg', extraLabel: 'Consulta', extraAmount: 80, subtotal: 380, total: 460, items: [{ nombre: 'Omeprazol 20 mg', cantidad: 2, precio: 74 }, { nombre: 'Vitamina C 1 g', cantidad: 2, precio: 89 }] },
+      { id: 'sale3', folio: 'V-240403', fecha: '2026-04-06T08:40:00', cliente: 'Jorge Martínez', pago: 'Transferencia', receta: '', extraLabel: '', extraAmount: 0, subtotal: 92, total: 92, items: [{ nombre: 'Loratadina 10 mg', cantidad: 1, precio: 49 }, { nombre: 'Ibuprofeno 400 mg', cantidad: 1, precio: 43 }] }
+    ]);
+  }
+
 }

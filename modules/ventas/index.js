@@ -1,5 +1,7 @@
 import { state } from '../../core/state.js';
 import { showToast } from '../../core/utils.js';
+import { load, save } from '../../core/storage.js';
+import { STORAGE_KEYS } from '../../core/constants.js';
 
 const sampleProducts = [
   { id: 'p1', sku: '75010001', barcode: '75010001', nombre: 'Paracetamol 500 mg', precio: 38, stock: 22, categoria: 'Genérico' },
@@ -86,12 +88,27 @@ export function bindVentas(render) {
   document.getElementById('extraAmount')?.addEventListener('input', e => { state.cart.extraAmount = Number(e.target.value) || 0; render(); });
   document.getElementById('clearCartBtn')?.addEventListener('click', () => { state.cart = emptyCart(); render(); });
   document.getElementById('chargeBtn')?.addEventListener('click', () => {
-    const { total } = totals();
     if (!state.cart.items.length) return showToast('Agrega al menos un producto.');
+    const { subtotal, extra, total } = totals();
     const folio = 'V-' + String(Date.now()).slice(-6);
+    const sales = load(STORAGE_KEYS.SALES, []);
+    sales.unshift({
+      id: `sale_${Date.now()}`,
+      folio,
+      fecha: new Date().toISOString(),
+      cliente: state.cart.cliente || 'Mostrador',
+      pago: state.cart.pago,
+      receta: state.cart.receta,
+      extraLabel: state.cart.extraLabel,
+      extraAmount: extra,
+      subtotal,
+      total,
+      items: state.cart.items.map(i => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio }))
+    });
+    save(STORAGE_KEYS.SALES, sales);
     state.lastSale = `${folio} · ${state.cart.cliente || 'Mostrador'} · $${total.toFixed(2)} · ${state.cart.pago}`;
     state.cart = emptyCart();
     render();
-    showToast('Venta registrada.');
+    showToast('Venta registrada y enviada a historial.');
   });
 }
