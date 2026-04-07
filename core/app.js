@@ -18,7 +18,7 @@ import { renderModule as renderMayoreoVentas, bindMayoreoVentas } from '../modul
 import { renderModule as renderMayoreoInventario, bindMayoreoInventario } from '../modules/mayoreo_inventario/index.js';
 import { renderModule as renderMayoreoClientes, bindMayoreoClientes } from '../modules/mayoreo_clientes/index.js';
 import { renderModule as renderMayoreoHistorial, bindMayoreoHistorial } from '../modules/mayoreo_historial/index.js';
-import { renderModule as renderMayoreoReportes } from '../modules/mayoreo_reportes/index.js';
+import { renderModule as renderMayoreoReportes, bindMayoreoReportes } from '../modules/mayoreo_reportes/index.js';
 import { renderWeb, bindWeb } from '../modules/web/index.js';
 
 const root = document.getElementById('root');
@@ -160,6 +160,7 @@ function bindAppEvents() {
   if (state.route === 'mayoreo_inventario') bindMayoreoInventario(render);
   if (state.route === 'mayoreo_clientes') bindMayoreoClientes(render);
   if (state.route === 'mayoreo_historial') bindMayoreoHistorial(render);
+  if (state.route === 'mayoreo_reportes') bindMayoreoReportes(render);
 }
 
 function render() {
