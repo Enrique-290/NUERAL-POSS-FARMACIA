@@ -3,6 +3,7 @@ export const moduleLoaders = {
   ventas: () => import('../modules/ventas/index.js'),
   inventario: () => import('../modules/inventario/index.js'),
   bodega: () => import('../modules/bodega/index.js'),
+  compras: () => import('../modules/compras/index.js'),
   clientes: () => import('../modules/clientes/index.js'),
   historial: () => import('../modules/historial/index.js'),
   reportes: () => import('../modules/reportes/index.js'),

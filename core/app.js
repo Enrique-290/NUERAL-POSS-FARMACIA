@@ -8,6 +8,7 @@ import { renderDashboard } from '../modules/dashboard/index.js';
 import { renderVentas, bindVentas } from '../modules/ventas/index.js';
 import { renderInventario, bindInventario } from '../modules/inventario/index.js';
 import { renderBodega, bindBodega } from '../modules/bodega/index.js';
+import { renderCompras, bindCompras } from '../modules/compras/index.js';
 import { renderUsers, bindUsers } from '../modules/users/index.js';
 import { renderClientes, bindClientes } from '../modules/clientes/index.js';
 import { renderModule as renderHistorial, bindHistorial } from '../modules/historial/index.js';
@@ -37,6 +38,7 @@ function pageContent() {
     case 'ventas': return renderVentas();
     case 'inventario': return renderInventario();
     case 'bodega': return renderBodega();
+    case 'compras': return renderCompras();
     case 'users_admin': return renderUsers();
     case 'clientes': return renderClientes();
     case 'historial': return renderHistorial();
@@ -136,6 +138,7 @@ function openRoute(route) {
   state.mobileMenu = false;
   if (route !== 'inventario') state.editingInventoryId = '';
   if (route !== 'bodega') state.editingBodegaId = '';
+  if (route !== 'compras') state.editingCompraId = '';
   if (route !== 'clientes') state.editingClientId = '';
   if (route !== 'mayoreo_inventario') state.editingMayoreoInventoryId = '';
   if (route !== 'mayoreo_clientes') state.editingMayoreoClientId = '';
@@ -150,6 +153,7 @@ function bindAppEvents() {
   if (state.route === 'ventas') bindVentas(render);
   if (state.route === 'inventario') bindInventario(render);
   if (state.route === 'bodega') bindBodega(render);
+  if (state.route === 'compras') bindCompras(render);
   if (state.route === 'clientes') bindClientes(render);
   if (state.route === 'historial') bindHistorial(render);
   if (state.route === 'reportes') bindReportes(render);

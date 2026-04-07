@@ -68,6 +68,12 @@ export function seedData() {
   }
 
 
+  if (!load(STORAGE_KEYS.PURCHASES, null)) {
+    save(STORAGE_KEYS.PURCHASES, [
+      { id: 'comp1', fecha: '2026-04-06', proveedor: 'Distribuidora Alfa', referencia: 'FAC-1001', destino: 'inventario', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', tipo: 'Genérico', sku: '75020001', barcode: '75020001', lote: 'PAR-C2406', costo: 21, precio: 38, cantidad: 12, stockMinimo: 8, caducidad: '2026-12-15', pago: 'Transferencia', notas: 'Compra semanal de reposición', total: 252 },
+      { id: 'comp2', fecha: '2026-04-07', proveedor: 'Medicinas del Centro', referencia: 'FAC-1002', destino: 'bodega', nombre: 'Omeprazol 20 mg', categoria: 'Original', tipo: 'Original', sku: '75020002', barcode: '75020002', lote: 'OME-C2407', costo: 44, precio: 74, cantidad: 20, stockMinimo: 10, caducidad: '2026-09-10', pago: 'Crédito', notas: 'Se guarda como reserva en bodega', total: 880 }
+    ]);
+  }
 
 
   if (!load(STORAGE_KEYS.MAYOREO_INVENTORY, null)) {
