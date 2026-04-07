@@ -4,6 +4,7 @@ export const moduleLoaders = {
   inventario: () => import('../modules/inventario/index.js'),
   bodega: () => import('../modules/bodega/index.js'),
   compras: () => import('../modules/compras/index.js'),
+  gastos: () => import('../modules/gastos/index.js'),
   clientes: () => import('../modules/clientes/index.js'),
   historial: () => import('../modules/historial/index.js'),
   reportes: () => import('../modules/reportes/index.js'),

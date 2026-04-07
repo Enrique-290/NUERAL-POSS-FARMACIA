@@ -75,6 +75,14 @@ export function seedData() {
     ]);
   }
 
+  if (!load(STORAGE_KEYS.EXPENSES, null)) {
+    save(STORAGE_KEYS.EXPENSES, [
+      { id: 'gas1', concepto: 'Renta local', categoria: 'Renta', monto: 8500, fecha: '2026-04-01', pago: 'Transferencia', responsable: 'Enrique', notas: 'Pago mensual del local.' },
+      { id: 'gas2', concepto: 'Recibo de luz', categoria: 'Luz', monto: 1320, fecha: '2026-04-05', pago: 'Efectivo', responsable: 'Caja', notas: 'Pago de CFE.' },
+      { id: 'gas3', concepto: 'Gasolina reparto', categoria: 'Gasolina', monto: 540, fecha: '2026-04-06', pago: 'Tarjeta', responsable: 'Enrique', notas: 'Entrega de pedidos y vueltas.' }
+    ]);
+  }
+
 
   if (!load(STORAGE_KEYS.MAYOREO_INVENTORY, null)) {
     save(STORAGE_KEYS.MAYOREO_INVENTORY, [
