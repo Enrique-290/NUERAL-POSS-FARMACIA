@@ -101,14 +101,17 @@ function inventoryRowsMarkup(items) {
         <td>${i.caducidad}</td>
         <td><span class="status-tag ${cad.className}">${cad.label}</span></td>
         <td>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-secondary small-btn edit-inventory-btn" data-id="${i.id}">Editar</button>
-            <button class="btn btn-secondary small-btn adjust-inventory-btn" data-id="${i.id}">Ajustar</button>
-            <button class="btn btn-secondary small-btn moves-inventory-btn" data-id="${i.id}">Movs</button>
-            <button class="btn btn-secondary small-btn web-toggle-btn" data-id="${i.id}">${i.visibleWeb ? 'Ocultar web' : 'Publicar web'}</button>
-            <button class="btn btn-secondary small-btn active-toggle-btn" data-id="${i.id}">${i.activo === false ? 'Activar' : 'Inactivar'}</button>
-            <button class="btn btn-danger small-btn delete-inventory-btn" data-id="${i.id}">Borrar</button>
-          </div>
+          <details class="inv-actions" style="position:relative;">
+            <summary style="list-style:none; cursor:pointer; width:34px; height:34px; border:1px solid var(--line); border-radius:10px; display:grid; place-items:center; background:#fff; font-size:20px; color:var(--text);">⋮</summary>
+            <div style="position:absolute; right:0; top:40px; min-width:180px; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:8px; z-index:20; display:grid; gap:6px;">
+              <button class="btn btn-secondary small-btn edit-inventory-btn" data-id="${i.id}" style="text-align:left; justify-content:flex-start;">Editar</button>
+              <button class="btn btn-secondary small-btn adjust-inventory-btn" data-id="${i.id}" style="text-align:left; justify-content:flex-start;">Ajustar stock</button>
+              <button class="btn btn-secondary small-btn moves-inventory-btn" data-id="${i.id}" style="text-align:left; justify-content:flex-start;">Ver movimientos</button>
+              <button class="btn btn-secondary small-btn web-toggle-btn" data-id="${i.id}" style="text-align:left; justify-content:flex-start;">${i.visibleWeb ? 'Ocultar web' : 'Publicar web'}</button>
+              <button class="btn btn-secondary small-btn active-toggle-btn" data-id="${i.id}" style="text-align:left; justify-content:flex-start;">${i.activo === false ? 'Activar' : 'Inactivar'}</button>
+              <button class="btn small-btn delete-inventory-btn" data-id="${i.id}" style="text-align:left; justify-content:flex-start; background:#fff1f1; color:#d84a4a; border:1px solid #f3c3c3;">Borrar</button>
+            </div>
+          </details>
         </td>
       </tr>
     `;
