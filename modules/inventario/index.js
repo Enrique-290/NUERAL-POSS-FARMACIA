@@ -17,6 +17,11 @@ function editing() {
   return getInventory().find(i => i.id === state.editingInventoryId) || null;
 }
 
+function adjustmentItem() {
+  const id = state.inventoryAdjustmentId || state.editingInventoryId;
+  return getInventory().find(i => i.id === id) || null;
+}
+
 function matchesQuery(item, q) {
   const text = [
     item.nombre,
@@ -37,12 +42,111 @@ function activeBadge(item) {
     : '<span class="status-tag ok">Activo</span>';
 }
 
+function filterInventory(items) {
+  const q = state.inventoryQuery.trim().toLowerCase();
+  return items.filter(item => {
+    if (q && !matchesQuery(item, q)) return false;
+
+    if (state.inventoryStockFilter === 'bajo' && !(item.stock <= item.stockMinimo)) return false;
+    if (state.inventoryStockFilter === 'agotado' && !(item.stock <= 0)) return false;
+    if (state.inventoryStockFilter === 'ok' && item.stock <= item.stockMinimo) return false;
+
+    const cad = inventoryStatus(item).label;
+    if (state.inventoryCaducidadFilter === 'vencido' && cad !== 'Vencido') return false;
+    if (state.inventoryCaducidadFilter === 'proximo' && cad !== 'Próximo') return false;
+    if (state.inventoryCaducidadFilter === 'vigente' && cad !== 'Vigente') return false;
+
+    return true;
+  });
+}
+
+function inventoryRowsMarkup(items) {
+  return items.map(i => {
+    const cad = inventoryStatus(i);
+    const stk = stockStatus(i);
+    return `
+      <tr>
+        <td>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div class="product-thumb">${i.nombre.slice(0,2).toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700;">${i.nombre}</div>
+              <div class="muted" style="font-size:.85rem;">$${Number(i.precio).toFixed(2)} · ${i.categoria}</div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">${activeBadge(i)}</div>
+            </div>
+          </div>
+        </td>
+        <td>${i.sku}</td>
+        <td>${i.presentacion || '—'}</td>
+        <td>${i.marca || '—'}</td>
+        <td><span class="status-tag ${stk.className}">${i.stock}</span></td>
+        <td>${i.stockMinimo}</td>
+        <td>${i.lote}</td>
+        <td>${i.caducidad}</td>
+        <td><span class="status-tag ${cad.className}">${cad.label}</span></td>
+        <td>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-secondary small-btn edit-inventory-btn" data-id="${i.id}">Editar</button>
+            <button class="btn btn-secondary small-btn adjust-inventory-btn" data-id="${i.id}">Ajustar</button>
+            <button class="btn btn-danger small-btn delete-inventory-btn" data-id="${i.id}">Borrar</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('') || `<tr><td colspan="10" class="muted">No se encontraron productos.</td></tr>`;
+}
+
+function renderAdjustmentCard(item) {
+  if (!item) {
+    return `
+      <div class="status-item" style="margin-top:12px;">
+        <span class="muted">Selecciona un producto para hacer ajuste manual de stock.</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line);">
+      <h3 style="margin:0 0 6px;">Ajuste manual de stock</h3>
+      <p class="muted" style="margin:0 0 12px;">Producto: <b>${item.nombre}</b> · stock actual <b>${item.stock}</b></p>
+      <div class="inventory-form-grid">
+        <div class="input-group">
+          <label for="adjMode">Tipo de ajuste</label>
+          <select id="adjMode">
+            <option value="sumar">Sumar stock</option>
+            <option value="restar">Restar stock</option>
+            <option value="fijar">Fijar stock exacto</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="adjQty">Cantidad</label>
+          <input id="adjQty" type="number" min="0" value="0" />
+        </div>
+        <div class="input-group" style="grid-column:1 / -1;">
+          <label for="adjReason">Motivo</label>
+          <select id="adjReason">
+            <option>Ajuste</option>
+            <option>Merma</option>
+            <option>Error de captura</option>
+            <option>Corrección de conteo</option>
+            <option>Otro</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+        <button class="btn btn-primary" id="applyInventoryAdjustBtn">Aplicar ajuste</button>
+        <button class="btn btn-secondary" id="cancelInventoryAdjustBtn">Cancelar</button>
+      </div>
+    </div>
+  `;
+}
+
 export function renderInventario() {
   const inventory = getInventory();
-  const q = state.inventoryQuery.trim().toLowerCase();
-  const filtered = !q ? inventory : inventory.filter(item => matchesQuery(item, q));
+  const filtered = filterInventory(inventory);
   const s = stats(inventory);
   const item = editing();
+  const adjust = adjustmentItem();
 
   return `
     <div class="page">
@@ -57,8 +161,8 @@ export function renderInventario() {
         <article class="card">
           <div class="toolbar-row">
             <div>
-              <h3 style="margin:0;">Inventario v2 · Etapa 1</h3>
-              <p class="muted" style="margin:6px 0 0;">Producto ampliado, super buscador y validaciones base.</p>
+              <h3 style="margin:0;">Inventario v2 · Etapa 2</h3>
+              <p class="muted" style="margin:6px 0 0;">Filtros de stock/caducidad y ajuste manual de existencias.</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="btn btn-secondary" id="clearInventorySearchBtn">Limpiar</button>
@@ -66,9 +170,29 @@ export function renderInventario() {
             </div>
           </div>
 
-          <div class="input-group" style="margin-bottom:16px;">
-            <label for="inventorySearch">Buscar producto</label>
-            <input id="inventorySearch" placeholder="Nombre, SKU, código, lote, categoría, marca..." value="${state.inventoryQuery}" />
+          <div class="inventory-form-grid" style="margin-bottom:16px;">
+            <div class="input-group" style="grid-column:1 / -1;">
+              <label for="inventorySearch">Buscar producto</label>
+              <input id="inventorySearch" placeholder="Nombre, SKU, código, lote, categoría, marca..." value="${state.inventoryQuery}" />
+            </div>
+            <div class="input-group">
+              <label for="inventoryStockFilter">Filtro stock</label>
+              <select id="inventoryStockFilter">
+                <option value="todos" ${state.inventoryStockFilter === 'todos' ? 'selected' : ''}>Todos</option>
+                <option value="bajo" ${state.inventoryStockFilter === 'bajo' ? 'selected' : ''}>Solo stock bajo</option>
+                <option value="agotado" ${state.inventoryStockFilter === 'agotado' ? 'selected' : ''}>Solo agotados</option>
+                <option value="ok" ${state.inventoryStockFilter === 'ok' ? 'selected' : ''}>Solo stock ok</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="inventoryCaducidadFilter">Filtro caducidad</label>
+              <select id="inventoryCaducidadFilter">
+                <option value="todos" ${state.inventoryCaducidadFilter === 'todos' ? 'selected' : ''}>Todos</option>
+                <option value="vigente" ${state.inventoryCaducidadFilter === 'vigente' ? 'selected' : ''}>Solo vigentes</option>
+                <option value="proximo" ${state.inventoryCaducidadFilter === 'proximo' ? 'selected' : ''}>Próximos a caducar</option>
+                <option value="vencido" ${state.inventoryCaducidadFilter === 'vencido' ? 'selected' : ''}>Vencidos</option>
+              </select>
+            </div>
           </div>
 
           <div class="table-wrap">
@@ -87,39 +211,8 @@ export function renderInventario() {
                   <th>Acciones</th>
                 </tr>
               </thead>
-              <tbody>
-                ${filtered.map(i => {
-                  const cad = inventoryStatus(i);
-                  const stk = stockStatus(i);
-                  return `
-                    <tr>
-                      <td>
-                        <div style="display:flex; gap:12px; align-items:center;">
-                          <div class="product-thumb">${i.nombre.slice(0,2).toUpperCase()}</div>
-                          <div>
-                            <div style="font-weight:700;">${i.nombre}</div>
-                            <div class="muted" style="font-size:.85rem;">$${Number(i.precio).toFixed(2)} · ${i.categoria}</div>
-                            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">${activeBadge(i)}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>${i.sku}</td>
-                      <td>${i.presentacion || '—'}</td>
-                      <td>${i.marca || '—'}</td>
-                      <td><span class="status-tag ${stk.className}">${i.stock}</span></td>
-                      <td>${i.stockMinimo}</td>
-                      <td>${i.lote}</td>
-                      <td>${i.caducidad}</td>
-                      <td><span class="status-tag ${cad.className}">${cad.label}</span></td>
-                      <td>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                          <button class="btn btn-secondary small-btn edit-inventory-btn" data-id="${i.id}">Editar</button>
-                          <button class="btn btn-danger small-btn delete-inventory-btn" data-id="${i.id}">Borrar</button>
-                        </div>
-                      </td>
-                    </tr>
-                  `;
-                }).join('') || `<tr><td colspan="10" class="muted">No se encontraron productos.</td></tr>`}
+              <tbody id="inventoryRows">
+                ${inventoryRowsMarkup(filtered)}
               </tbody>
             </table>
           </div>
@@ -127,7 +220,7 @@ export function renderInventario() {
 
         <article class="card">
           <h3>${item ? 'Editar producto' : 'Alta de producto'}</h3>
-          <p class="muted">Etapa 1: nuevos campos base y validaciones clave.</p>
+          <p class="muted">Etapa 2: filtros avanzados y ajuste manual de stock.</p>
           <form id="inventoryForm" class="inventory-form-grid" style="margin-top:14px;">
             <input type="hidden" id="inventoryId" value="${item?.id || ''}" />
             <div class="input-group"><label for="invNombre">Nombre</label><input id="invNombre" value="${item?.nombre || ''}" required /></div>
@@ -153,8 +246,9 @@ export function renderInventario() {
           <div class="status-list" style="margin-top:18px;">
             <div class="status-item"><span>Verde</span><span class="status-tag ok">Vigente</span></div>
             <div class="status-item"><span>Amarillo</span><span class="status-tag warn">Próximo a caducar</span></div>
-            <div class="status-item"><span>Rojo</span><span class="status-tag danger">Vencido o stock bajo</span></div>
+            <div class="status-item"><span>Rojo</span><span class="status-tag danger">Vencido / stock bajo</span></div>
           </div>
+          ${renderAdjustmentCard(adjust)}
         </article>
       </section>
     </div>
@@ -167,31 +261,70 @@ function validatePayload(payload, items) {
   }
   if (payload.stock < 0) return 'El stock no puede ser negativo.';
   if (payload.stockMinimo < 0) return 'El stock mínimo no puede ser negativo.';
-  if (payload.costo < 0 || payload.precio < 0) return 'Costo y precio deben ser mayores o iguales a 0.';
+  if (payload.costo < 0 || payload.precio < 0) return 'Costo y precio deben ser mayores o iguales a cero.';
   if (payload.precio < payload.costo) return 'El precio no puede ser menor al costo.';
 
-  const duplicateSku = items.find(i => i.sku.toLowerCase() === payload.sku.toLowerCase() && i.id !== payload.id);
-  if (duplicateSku) return `Ya existe un producto con el SKU ${payload.sku}.`;
-
-  const duplicateBarcode = items.find(i => i.barcode.toLowerCase() === payload.barcode.toLowerCase() && i.id !== payload.id);
-  if (duplicateBarcode) return `Ya existe un producto con el código ${payload.barcode}.`;
-
+  const repeatedSku = items.find(i => i.sku === payload.sku && i.id !== payload.id);
+  if (repeatedSku) return 'Ya existe otro producto con ese SKU.';
+  const repeatedBarcode = items.find(i => i.barcode === payload.barcode && i.id !== payload.id);
+  if (repeatedBarcode) return 'Ya existe otro producto con ese código de barras.';
   return '';
+}
+
+function refreshInventoryTableOnly(render) {
+  const rows = document.getElementById('inventoryRows');
+  if (!rows) return;
+  rows.innerHTML = inventoryRowsMarkup(filterInventory(getInventory()));
+  bindInventoryRowButtons(render);
+}
+
+function bindInventoryRowButtons(render) {
+  document.querySelectorAll('.edit-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
+    state.editingInventoryId = btn.dataset.id;
+    state.inventoryAdjustmentId = '';
+    render();
+  }));
+
+  document.querySelectorAll('.adjust-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
+    state.inventoryAdjustmentId = btn.dataset.id;
+    render();
+  }));
+
+  document.querySelectorAll('.delete-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
+    saveInventory(getInventory().filter(i => i.id !== btn.dataset.id));
+    if (state.editingInventoryId === btn.dataset.id) state.editingInventoryId = '';
+    if (state.inventoryAdjustmentId === btn.dataset.id) state.inventoryAdjustmentId = '';
+    render();
+    showToast('Producto eliminado.');
+  }));
 }
 
 export function bindInventario(render) {
   document.getElementById('inventorySearch')?.addEventListener('input', e => {
     state.inventoryQuery = e.target.value;
-    render();
+    refreshInventoryTableOnly(render);
+  });
+
+  document.getElementById('inventoryStockFilter')?.addEventListener('change', e => {
+    state.inventoryStockFilter = e.target.value;
+    refreshInventoryTableOnly(render);
+  });
+
+  document.getElementById('inventoryCaducidadFilter')?.addEventListener('change', e => {
+    state.inventoryCaducidadFilter = e.target.value;
+    refreshInventoryTableOnly(render);
   });
 
   document.getElementById('clearInventorySearchBtn')?.addEventListener('click', () => {
     state.inventoryQuery = '';
+    state.inventoryStockFilter = 'todos';
+    state.inventoryCaducidadFilter = 'todos';
     render();
   });
 
   document.getElementById('newInventoryBtn')?.addEventListener('click', () => {
     state.editingInventoryId = '';
+    state.inventoryAdjustmentId = '';
     render();
   });
 
@@ -200,17 +333,33 @@ export function bindInventario(render) {
     render();
   });
 
-  document.querySelectorAll('.edit-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
-    state.editingInventoryId = btn.dataset.id;
-    render();
-  }));
+  bindInventoryRowButtons(render);
 
-  document.querySelectorAll('.delete-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
-    saveInventory(getInventory().filter(i => i.id !== btn.dataset.id));
-    if (state.editingInventoryId === btn.dataset.id) state.editingInventoryId = '';
+  document.getElementById('cancelInventoryAdjustBtn')?.addEventListener('click', () => {
+    state.inventoryAdjustmentId = '';
     render();
-    showToast('Producto eliminado.');
-  }));
+  });
+
+  document.getElementById('applyInventoryAdjustBtn')?.addEventListener('click', () => {
+    const item = adjustmentItem();
+    if (!item) return showToast('Selecciona un producto para ajustar.');
+    const qty = Number(document.getElementById('adjQty')?.value || 0);
+    const mode = document.getElementById('adjMode')?.value || 'sumar';
+    const reason = document.getElementById('adjReason')?.value || 'Ajuste';
+    if (qty < 0) return showToast('La cantidad no puede ser negativa.');
+
+    let nextStock = item.stock;
+    if (mode === 'sumar') nextStock = item.stock + qty;
+    if (mode === 'restar') nextStock = item.stock - qty;
+    if (mode === 'fijar') nextStock = qty;
+
+    if (nextStock < 0) return showToast('El ajuste dejaría stock negativo.');
+
+    saveInventory(getInventory().map(i => i.id === item.id ? { ...i, stock: nextStock } : i));
+    state.inventoryAdjustmentId = item.id;
+    render();
+    showToast(`Ajuste aplicado: ${reason}. Nuevo stock ${nextStock}.`);
+  });
 
   document.getElementById('saveInventoryBtn')?.addEventListener('click', () => {
     const payload = {
