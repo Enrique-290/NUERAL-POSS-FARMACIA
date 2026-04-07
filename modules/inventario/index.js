@@ -80,8 +80,19 @@ function inventoryRowsMarkup(items) {
   return items.map(i => {
     const cad = inventoryStatus(i);
     const stk = stockStatus(i);
+    const search = [
+      i.nombre,
+      i.sku,
+      i.barcode,
+      i.lote,
+      i.categoria,
+      i.presentacion,
+      i.marca,
+      i.descripcion,
+      i.categoriaWeb
+    ].join(' ').toLowerCase().replace(/"/g, '&quot;');
     return `
-      <tr>
+      <tr data-search="${search}" data-stock="${i.stock}" data-stockmin="${i.stockMinimo}" data-cad="${cad.label}" data-visibleweb="${i.visibleWeb ? '1' : '0'}" data-destacado="${i.destacadoWeb ? '1' : '0'}" data-activo="${i.activo === false ? '0' : '1'}">
         <td>
           <div style="display:flex; gap:12px; align-items:center;">
             <div class="product-thumb">${i.nombre.slice(0,2).toUpperCase()}</div>
@@ -377,6 +388,36 @@ function exportInventoryCsv() {
   downloadFile('inventario_neural_pos_farmacia.csv', [headers.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8;');
 }
 
+function applyInventoryFiltersToDOM() {
+  const rows = document.querySelectorAll('tbody tr[data-search]');
+  rows.forEach(row => {
+    const search = row.dataset.search || '';
+    const stock = Number(row.dataset.stock || 0);
+    const stockMin = Number(row.dataset.stockmin || 0);
+    const cad = row.dataset.cad || '';
+    const visibleWeb = row.dataset.visibleweb === '1';
+    const destacado = row.dataset.destacado === '1';
+    const activo = row.dataset.activo === '1';
+
+    let visible = true;
+    const q = (state.inventoryQuery || '').trim().toLowerCase();
+    if (q && !search.includes(q)) visible = false;
+    if (state.inventoryStockFilter === 'bajo' && !(stock <= stockMin)) visible = false;
+    if (state.inventoryStockFilter === 'agotado' && !(stock <= 0)) visible = false;
+    if (state.inventoryStockFilter === 'ok' && stock <= stockMin) visible = false;
+    if (state.inventoryCaducidadFilter === 'vencido' && cad !== 'Vencido') visible = false;
+    if (state.inventoryCaducidadFilter === 'proximo' && cad !== 'Próximo') visible = false;
+    if (state.inventoryCaducidadFilter === 'vigente' && cad !== 'Vigente') visible = false;
+    if (state.inventoryWebFilter === 'publicados' && !visibleWeb) visible = false;
+    if (state.inventoryWebFilter === 'ocultos' && visibleWeb) visible = false;
+    if (state.inventoryWebFilter === 'destacados' && !destacado) visible = false;
+    if (state.inventoryActiveFilter === 'activos' && !activo) visible = false;
+    if (state.inventoryActiveFilter === 'inactivos' && activo) visible = false;
+
+    row.style.display = visible ? '' : 'none';
+  });
+}
+
 function normalizeImportedItem(raw) {
   return {
     id: raw.id || `inv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -458,7 +499,10 @@ function bindInventoryRowButtons(render) {
 }
 
 export function bindInventario(render) {
-  document.getElementById('inventorySearch')?.addEventListener('input', e => { state.inventoryQuery = e.target.value; render(); });
+  document.getElementById('inventorySearch')?.addEventListener('input', e => {
+    state.inventoryQuery = e.target.value;
+    applyInventoryFiltersToDOM();
+  });
   document.getElementById('inventoryStockFilter')?.addEventListener('change', e => { state.inventoryStockFilter = e.target.value; render(); });
   document.getElementById('inventoryCaducidadFilter')?.addEventListener('change', e => { state.inventoryCaducidadFilter = e.target.value; render(); });
   document.getElementById('inventoryWebFilter')?.addEventListener('change', e => { state.inventoryWebFilter = e.target.value; render(); });
@@ -539,6 +583,8 @@ export function bindInventario(render) {
     render();
     showToast(`Ajuste aplicado: ${reason}. Nuevo stock ${nextStock}.`);
   });
+
+  applyInventoryFiltersToDOM();
 
   document.getElementById('saveInventoryBtn')?.addEventListener('click', () => {
     const payload = {
