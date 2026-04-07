@@ -20,18 +20,5 @@ export const state = {
   lastSale: '',
   webQuery: '',
   webCategory: 'Todas',
-  webCart: [],
-  mayoreoQuery: '',
-  mayoreoInventoryQuery: '',
-  mayoreoClientsQuery: '',
-  mayoreoHistoryQuery: '',
-  mayoreoReportQuery: '',
-  mayoreoReportPayment: '',
-  mayoreoReportFrom: '',
-  mayoreoReportTo: '',
-  editingMayoreoInventoryId: '',
-  editingMayoreoClientId: '',
-  mayoreoCart: { items: [], cliente: '', pago: 'Transferencia', descuento: 0, observaciones: '' },
-  lastMayoreoSale: '',
-  selectedMayoreoSaleId: ''
+  webCart: []
 };

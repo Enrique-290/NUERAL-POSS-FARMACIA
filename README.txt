@@ -25,3 +25,6 @@ V6: Configuración v1 agregada (branding, ticket, categorías, pagos, respaldo/r
 
 
 V8: corrige migración de permisos y datos web para que aparezca el módulo Página web en instalaciones que ya venían de versiones anteriores.
+
+
+PWA v1 agregado: manifest.json, sw.js, iconos e instalación como app.

@@ -15,26 +15,18 @@ export function seedData() {
       { id: 'usr_admin', nombre: 'Administrador General', username: 'admin', password: '1234', role: 'Administrador', active: true, permissions: defaultPermissions(true) },
       { id: 'usr_caja', nombre: 'Caja Mostrador', username: 'caja', password: '1234', role: 'Caja', active: true, permissions: { ...defaultPermissions(false), dashboard: true, ventas: true, clientes: true, historial: true } }
     ]);
-  } else {
+  }
+  else {
     const migrated = users.map(u => ({
       ...u,
-      permissions: { ...defaultPermissions(u.role === 'Administrador'), ...(u.permissions || {}) }
+      permissions: { ...defaultPermissions(u.role === "Administrador"), ...(u.permissions || {}) }
     }));
     save(STORAGE_KEYS.USERS, migrated);
   }
 
+
   if (!load(STORAGE_KEYS.CONFIG, null)) {
-    save(STORAGE_KEYS.CONFIG, {
-      appName: 'Neural POS Farmacia',
-      footerText: 'Hecho por Neural Apps',
-      web: {
-        storeName: 'Neural POS Farmacia',
-        heroTitle: 'Tu farmacia cerca de ti',
-        heroSubtitle: 'Medicamentos, cuidado diario y pedidos por WhatsApp.',
-        whatsapp: '525500000000',
-        showCart: true
-      }
-    });
+    save(STORAGE_KEYS.CONFIG, { appName: 'Neural POS Farmacia', footerText: 'Hecho por Neural Apps', web: { storeName: 'Neural POS Farmacia', heroTitle: 'Tu farmacia cerca de ti', heroSubtitle: 'Medicamentos, cuidado diario y pedidos por WhatsApp.', whatsapp: '525500000000', showCart: true } });
   }
 
   if (!load(STORAGE_KEYS.INVENTORY, null)) {
@@ -45,7 +37,8 @@ export function seedData() {
       { id: 'inv4', sku: '75020004', barcode: '75020004', nombre: 'Loratadina 10 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 31, precio: 49, stock: 25, stockMinimo: 9, lote: 'LOR-2407', caducidad: '2027-01-08', visibleWeb: false, precioWeb: 49, categoriaWeb: 'Alergias', destacadoWeb: false },
       { id: 'inv5', sku: '75020005', barcode: '75020005', nombre: 'Vitamina C 1 g', categoria: 'Vitaminas', tipo: 'Original', costo: 61, precio: 89, stock: 14, stockMinimo: 7, lote: 'VIT-2409', caducidad: '2026-03-22', visibleWeb: true, precioWeb: 92, categoriaWeb: 'Vitaminas', destacadoWeb: false }
     ]);
-  } else {
+  }
+  else {
     const migratedInventory = load(STORAGE_KEYS.INVENTORY, []).map(item => ({
       ...item,
       visibleWeb: Boolean(item.visibleWeb),
@@ -56,6 +49,7 @@ export function seedData() {
     save(STORAGE_KEYS.INVENTORY, migratedInventory);
   }
 
+
   if (!load(STORAGE_KEYS.BODEGA, null)) {
     save(STORAGE_KEYS.BODEGA, [
       { id: 'bod1', sku: '75020001', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', stock: 120, stockMinimo: 40, lote: 'PAR-B2401', caducidad: '2026-12-10' },
@@ -63,6 +57,7 @@ export function seedData() {
       { id: 'bod3', sku: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', stock: 30, stockMinimo: 12, lote: 'JAR-B2402', caducidad: '2026-07-20' }
     ]);
   }
+
 
   if (!load(STORAGE_KEYS.CLIENTS, null)) {
     save(STORAGE_KEYS.CLIENTS, [
@@ -72,6 +67,7 @@ export function seedData() {
     ]);
   }
 
+
   if (!load(STORAGE_KEYS.SALES, null)) {
     save(STORAGE_KEYS.SALES, [
       { id: 'sale1', folio: 'V-240401', fecha: '2026-04-05T09:12:00', cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0, subtotal: 180, total: 180, items: [{ nombre: 'Paracetamol 500 mg', cantidad: 2, precio: 38 }, { nombre: 'Jarabe infantil', cantidad: 1, precio: 104 }] },
@@ -80,25 +76,4 @@ export function seedData() {
     ]);
   }
 
-  if (!load(STORAGE_KEYS.MAYOREO_INVENTORY, null)) {
-    save(STORAGE_KEYS.MAYOREO_INVENTORY, [
-      { id: 'miv1', sku: 'M75030001', barcode: 'M75030001', nombre: 'Paracetamol 500 mg caja', categoria: 'Genérico', tipo: 'Genérico', costo: 380, precio: 520, stock: 48, stockMinimo: 18, lote: 'MPAR-2401', caducidad: '2026-12-15' },
-      { id: 'miv2', sku: 'M75030002', barcode: 'M75030002', nombre: 'Omeprazol 20 mg caja', categoria: 'Original', tipo: 'Original', costo: 710, precio: 930, stock: 16, stockMinimo: 12, lote: 'MOME-2404', caducidad: '2026-08-20' },
-      { id: 'miv3', sku: 'M75030003', barcode: 'M75030003', nombre: 'Vitamina C 1 g paquete', categoria: 'Vitaminas', tipo: 'Original', costo: 540, precio: 720, stock: 22, stockMinimo: 10, lote: 'MVIT-2406', caducidad: '2026-06-10' }
-    ]);
-  }
-
-  if (!load(STORAGE_KEYS.MAYOREO_CLIENTS, null)) {
-    save(STORAGE_KEYS.MAYOREO_CLIENTS, [
-      { id: 'mcli1', nombre: 'Farmacia San José', telefono: '5511112233', email: 'compras@sanjose.mx', tipoCliente: 'Mayoreo', fechaAlta: '2026-02-14', activo: true, direccion: 'Av. Hidalgo 20', notas: 'Pago transferencia 7 días.' },
-      { id: 'mcli2', nombre: 'Consultorio Vida', telefono: '5522223344', email: 'admin@vida.mx', tipoCliente: 'Mayoreo', fechaAlta: '2026-03-02', activo: true, direccion: 'Col. Roma', notas: 'Compra medicamentos de temporada.' }
-    ]);
-  }
-
-  if (!load(STORAGE_KEYS.MAYOREO_SALES, null)) {
-    save(STORAGE_KEYS.MAYOREO_SALES, [
-      { id: 'msale1', folio: 'M-240401', fecha: '2026-04-05T11:30:00', cliente: 'Farmacia San José', pago: 'Transferencia', descuento: 120, observaciones: 'Entrega en mostrador', subtotal: 1970, total: 1850, items: [{ nombre: 'Paracetamol 500 mg caja', cantidad: 2, precio: 520 }, { nombre: 'Vitamina C 1 g paquete', cantidad: 1, precio: 930 }] },
-      { id: 'msale2', folio: 'M-240402', fecha: '2026-04-06T09:15:00', cliente: 'Consultorio Vida', pago: 'Efectivo', descuento: 0, observaciones: '', subtotal: 1440, total: 1440, items: [{ nombre: 'Vitamina C 1 g paquete', cantidad: 2, precio: 720 }] }
-    ]);
-  }
 }
