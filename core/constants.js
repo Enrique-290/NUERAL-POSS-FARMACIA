@@ -5,7 +5,10 @@ export const STORAGE_KEYS = {
   INVENTORY: 'neural_pos_inventory',
   BODEGA: 'neural_pos_bodega',
   CLIENTS: 'neural_pos_clients',
-  SALES: 'neural_pos_sales'
+  SALES: 'neural_pos_sales',
+  MAYOREO_INVENTORY: 'neural_pos_mayoreo_inventory',
+  MAYOREO_CLIENTS: 'neural_pos_mayoreo_clients',
+  MAYOREO_SALES: 'neural_pos_mayoreo_sales'
 };
 
 export const MODULES = [

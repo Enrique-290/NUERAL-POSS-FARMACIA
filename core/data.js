@@ -76,4 +76,26 @@ export function seedData() {
     ]);
   }
 
+  if (!load(STORAGE_KEYS.MAYOREO_INVENTORY, null)) {
+    save(STORAGE_KEYS.MAYOREO_INVENTORY, [
+      { id: 'mInv1', sku: 'M75030001', barcode: 'M75030001', nombre: 'Paracetamol 500 mg caja', categoria: 'Genérico', tipo: 'Genérico', costo: 420, precio: 560, stock: 18, stockMinimo: 6, lote: 'MPAR-2601', caducidad: '2026-12-20' },
+      { id: 'mInv2', sku: 'M75030002', barcode: 'M75030002', nombre: 'Omeprazol 20 mg caja', categoria: 'Original', tipo: 'Original', costo: 720, precio: 920, stock: 10, stockMinimo: 4, lote: 'MOME-2602', caducidad: '2026-08-15' },
+      { id: 'mInv3', sku: 'M75030003', barcode: 'M75030003', nombre: 'Vitamina C 1 g paquete', categoria: 'Vitaminas', tipo: 'Original', costo: 540, precio: 760, stock: 7, stockMinimo: 5, lote: 'MVIT-2603', caducidad: '2026-05-22' }
+    ]);
+  }
+
+  if (!load(STORAGE_KEYS.MAYOREO_CLIENTS, null)) {
+    save(STORAGE_KEYS.MAYOREO_CLIENTS, [
+      { id: 'mcli1', nombre: 'Clínica San Pedro', telefono: '5587654321', email: 'compras@sanpedro.mx', tipoCliente: 'Clínica', fechaAlta: '2026-02-10', activo: true, direccion: 'Av. Reforma 120', notas: 'Compra por volumen cada quincena.' },
+      { id: 'mcli2', nombre: 'Farmacia La Luz', telefono: '5511122233', email: 'pedidos@laluz.mx', tipoCliente: 'Farmacia', fechaAlta: '2026-03-02', activo: true, direccion: 'Neza Centro', notas: 'Requiere factura semanal.' }
+    ]);
+  }
+
+  if (!load(STORAGE_KEYS.MAYOREO_SALES, null)) {
+    save(STORAGE_KEYS.MAYOREO_SALES, [
+      { id: 'msale1', folio: 'MV-240501', fecha: '2026-04-05T11:30:00', cliente: 'Clínica San Pedro', pago: 'Transferencia', extraLabel: '', extraAmount: 0, subtotal: 2040, total: 2040, items: [{ nombre: 'Paracetamol 500 mg caja', cantidad: 2, precio: 560 }, { nombre: 'Vitamina C 1 g paquete', cantidad: 1, precio: 920 }] },
+      { id: 'msale2', folio: 'MV-240502', fecha: '2026-04-06T13:15:00', cliente: 'Farmacia La Luz', pago: 'Efectivo', extraLabel: 'Flete', extraAmount: 120, subtotal: 1840, total: 1960, items: [{ nombre: 'Omeprazol 20 mg caja', cantidad: 2, precio: 920 }] }
+    ]);
+  }
+
 }
