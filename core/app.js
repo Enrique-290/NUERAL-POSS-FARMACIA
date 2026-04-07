@@ -139,7 +139,7 @@ function openRoute(route) {
   state.route = route;
   state.mobileMenu = false;
   if (route !== 'inventario') state.editingInventoryId = '';
-  if (route !== 'bodega') state.editingBodegaId = '';
+  if (route !== 'bodega') { state.editingBodegaId = ''; state.bodegaMovementSku = ''; }
   if (route !== 'compras') state.editingCompraId = '';
   if (route !== 'gastos') state.editingGastoId = '';
   if (route !== 'clientes') state.editingClientId = '';
