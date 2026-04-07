@@ -27,5 +27,6 @@ export const state = {
   mayoreoCart: { items: [], cliente: '', pago: 'Transferencia', nota: '', extraLabel: '', extraAmount: 0 },
   mayoreoLastSale: '',
   editingMayoreoInventoryId: '',
-  editingMayoreoClientId: ''
+  editingMayoreoClientId: '',
+  mayoreoHistoryQuery: ''
 };
