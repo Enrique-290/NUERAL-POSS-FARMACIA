@@ -15,7 +15,7 @@ import { renderModule as renderReportes, bindReportes } from '../modules/reporte
 import { renderModule as renderConfiguracion, bindConfiguracion } from '../modules/configuracion/index.js';
 import { renderModule as renderMayoreoDashboard } from '../modules/mayoreo_dashboard/index.js';
 import { renderModule as renderMayoreoVentas, bindMayoreoVentas } from '../modules/mayoreo_ventas/index.js';
-import { renderModule as renderMayoreoInventario } from '../modules/mayoreo_inventario/index.js';
+import { renderModule as renderMayoreoInventario, bindMayoreoInventario } from '../modules/mayoreo_inventario/index.js';
 import { renderModule as renderMayoreoClientes } from '../modules/mayoreo_clientes/index.js';
 import { renderModule as renderMayoreoHistorial } from '../modules/mayoreo_historial/index.js';
 import { renderModule as renderMayoreoReportes } from '../modules/mayoreo_reportes/index.js';
@@ -137,6 +137,7 @@ function openRoute(route) {
   if (route !== 'inventario') state.editingInventoryId = '';
   if (route !== 'bodega') state.editingBodegaId = '';
   if (route !== 'clientes') state.editingClientId = '';
+  if (route !== 'mayoreo_inventario') state.editingMayoreoInventoryId = '';
   render();
 }
 
@@ -155,6 +156,7 @@ function bindAppEvents() {
   if (state.route === 'configuracion') bindConfiguracion(render);
   if (state.route === 'pagina_web') bindWeb(render);
   if (state.route === 'mayoreo_ventas') bindMayoreoVentas(render);
+  if (state.route === 'mayoreo_inventario') bindMayoreoInventario(render);
 }
 
 function render() {
