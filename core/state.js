@@ -20,17 +20,5 @@ export const state = {
   lastSale: '',
   webQuery: '',
   webCategory: 'Todas',
-  webCart: [],
-  salesQueryMayoreo: '',
-  mayoreoInventoryQuery: '',
-  mayoreoClientsQuery: '',
-  mayoreoHistoryQuery: '',
-  mayoreoReportQuery: '',
-  mayoreoReportPayment: '',
-  mayoreoReportFrom: '',
-  mayoreoReportTo: '',
-  editingMayoreoInventoryId: '',
-  editingMayoreoClientId: '',
-  mayoreoCart: { items: [], cliente: '', pago: 'Efectivo', extraLabel: '', extraAmount: 0 },
-  mayoreoLastSale: '',
+  webCart: []
 };

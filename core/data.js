@@ -68,33 +68,38 @@ export function seedData() {
   }
 
 
-  if (!load(STORAGE_KEYS.SALES, null)) {
-    save(STORAGE_KEYS.SALES, [
-      { id: 'sale1', folio: 'V-240401', fecha: '2026-04-05T09:12:00', cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0, subtotal: 180, total: 180, items: [{ nombre: 'Paracetamol 500 mg', cantidad: 2, precio: 38 }, { nombre: 'Jarabe infantil', cantidad: 1, precio: 104 }] },
-      { id: 'sale2', folio: 'V-240402', fecha: '2026-04-05T10:24:00', cliente: 'Ana Ruiz', pago: 'Tarjeta', receta: 'receta_ana.jpg', extraLabel: 'Consulta', extraAmount: 80, subtotal: 380, total: 460, items: [{ nombre: 'Omeprazol 20 mg', cantidad: 2, precio: 74 }, { nombre: 'Vitamina C 1 g', cantidad: 2, precio: 89 }] },
-      { id: 'sale3', folio: 'V-240403', fecha: '2026-04-06T08:40:00', cliente: 'Jorge Martínez', pago: 'Transferencia', receta: '', extraLabel: '', extraAmount: 0, subtotal: 92, total: 92, items: [{ nombre: 'Loratadina 10 mg', cantidad: 1, precio: 49 }, { nombre: 'Ibuprofeno 400 mg', cantidad: 1, precio: 43 }] }
-    ]);
-  }
+
 
   if (!load(STORAGE_KEYS.MAYOREO_INVENTORY, null)) {
     save(STORAGE_KEYS.MAYOREO_INVENTORY, [
-      { id: 'mInv1', sku: 'M75030001', barcode: 'M75030001', nombre: 'Paracetamol 500 mg caja', categoria: 'Genérico', tipo: 'Genérico', costo: 420, precio: 560, stock: 18, stockMinimo: 6, lote: 'MPAR-2601', caducidad: '2026-12-20' },
-      { id: 'mInv2', sku: 'M75030002', barcode: 'M75030002', nombre: 'Omeprazol 20 mg caja', categoria: 'Original', tipo: 'Original', costo: 720, precio: 920, stock: 10, stockMinimo: 4, lote: 'MOME-2602', caducidad: '2026-08-15' },
-      { id: 'mInv3', sku: 'M75030003', barcode: 'M75030003', nombre: 'Vitamina C 1 g paquete', categoria: 'Vitaminas', tipo: 'Original', costo: 540, precio: 760, stock: 7, stockMinimo: 5, lote: 'MVIT-2603', caducidad: '2026-05-22' }
+      { id: 'm_inv1', sku: 'M75030001', barcode: 'M75030001', nombre: 'Paracetamol 500 mg Caja', categoria: 'Genérico', tipo: 'Genérico', costo: 320, precio: 410, stock: 28, stockMinimo: 12, lote: 'MPAR-2401', caducidad: '2026-10-12' },
+      { id: 'm_inv2', sku: 'M75030002', barcode: 'M75030002', nombre: 'Omeprazol 20 mg Caja', categoria: 'Original', tipo: 'Original', costo: 610, precio: 760, stock: 11, stockMinimo: 10, lote: 'MOME-2405', caducidad: '2026-06-08' },
+      { id: 'm_inv3', sku: 'M75030003', barcode: 'M75030003', nombre: 'Vitamina C 1 g Caja', categoria: 'Vitaminas', tipo: 'Original', costo: 700, precio: 920, stock: 17, stockMinimo: 8, lote: 'MVIT-2407', caducidad: '2026-04-22' },
+      { id: 'm_inv4', sku: 'M75030004', barcode: 'M75030004', nombre: 'Loratadina 10 mg Caja', categoria: 'Genérico', tipo: 'Genérico', costo: 390, precio: 540, stock: 35, stockMinimo: 15, lote: 'MLOR-2408', caducidad: '2027-01-15' }
     ]);
   }
 
   if (!load(STORAGE_KEYS.MAYOREO_CLIENTS, null)) {
     save(STORAGE_KEYS.MAYOREO_CLIENTS, [
-      { id: 'mcli1', nombre: 'Clínica San Pedro', telefono: '5587654321', email: 'compras@sanpedro.mx', tipoCliente: 'Clínica', fechaAlta: '2026-02-10', activo: true, direccion: 'Av. Reforma 120', notas: 'Compra por volumen cada quincena.' },
-      { id: 'mcli2', nombre: 'Farmacia La Luz', telefono: '5511122233', email: 'pedidos@laluz.mx', tipoCliente: 'Farmacia', fechaAlta: '2026-03-02', activo: true, direccion: 'Neza Centro', notas: 'Requiere factura semanal.' }
+      { id: 'm_cli1', nombre: 'Clínica San Pedro', telefono: '5587654321', email: 'compras@sanpedro.mx', tipoCliente: 'Mayoreo', fechaAlta: '2026-02-10', activo: true, direccion: 'Av. Reforma 120', notas: 'Compra cajas completas cada quincena.' },
+      { id: 'm_cli2', nombre: 'Farmacia del Valle', telefono: '5511122233', email: 'pedidos@fdelvalle.mx', tipoCliente: 'Mayoreo', fechaAlta: '2026-03-01', activo: true, direccion: 'Insurgentes Sur 340', notas: 'Maneja pedido semanal.' },
+      { id: 'm_cli3', nombre: 'Consultorio Buenavista', telefono: '5599988877', email: '', tipoCliente: 'Mayoreo', fechaAlta: '2026-03-15', activo: true, direccion: 'Buenavista 45', notas: 'Pide solo vitaminos y analgésicos.' }
     ]);
   }
 
   if (!load(STORAGE_KEYS.MAYOREO_SALES, null)) {
     save(STORAGE_KEYS.MAYOREO_SALES, [
-      { id: 'msale1', folio: 'MV-240501', fecha: '2026-04-05T11:30:00', cliente: 'Clínica San Pedro', pago: 'Transferencia', extraLabel: '', extraAmount: 0, subtotal: 2040, total: 2040, items: [{ nombre: 'Paracetamol 500 mg caja', cantidad: 2, precio: 560 }, { nombre: 'Vitamina C 1 g paquete', cantidad: 1, precio: 920 }] },
-      { id: 'msale2', folio: 'MV-240502', fecha: '2026-04-06T13:15:00', cliente: 'Farmacia La Luz', pago: 'Efectivo', extraLabel: 'Flete', extraAmount: 120, subtotal: 1840, total: 1960, items: [{ nombre: 'Omeprazol 20 mg caja', cantidad: 2, precio: 920 }] }
+      { id: 'm_sale1', folio: 'M-240401', fecha: '2026-04-04T10:15:00', cliente: 'Clínica San Pedro', pago: 'Transferencia', extraAmount: 0, subtotal: 1640, total: 1640, items: [{ nombre: 'Paracetamol 500 mg Caja', cantidad: 4, precio: 410 }] },
+      { id: 'm_sale2', folio: 'M-240402', fecha: '2026-04-05T12:40:00', cliente: 'Farmacia del Valle', pago: 'Efectivo', extraAmount: 60, subtotal: 2280, total: 2340, items: [{ nombre: 'Omeprazol 20 mg Caja', cantidad: 3, precio: 760 }] },
+      { id: 'm_sale3', folio: 'M-240403', fecha: '2026-04-06T09:20:00', cliente: 'Consultorio Buenavista', pago: 'Tarjeta', extraAmount: 0, subtotal: 1840, total: 1840, items: [{ nombre: 'Vitamina C 1 g Caja', cantidad: 2, precio: 920 }] }
+    ]);
+  }
+
+  if (!load(STORAGE_KEYS.SALES, null)) {
+    save(STORAGE_KEYS.SALES, [
+      { id: 'sale1', folio: 'V-240401', fecha: '2026-04-05T09:12:00', cliente: 'Mostrador', pago: 'Efectivo', receta: '', extraLabel: '', extraAmount: 0, subtotal: 180, total: 180, items: [{ nombre: 'Paracetamol 500 mg', cantidad: 2, precio: 38 }, { nombre: 'Jarabe infantil', cantidad: 1, precio: 104 }] },
+      { id: 'sale2', folio: 'V-240402', fecha: '2026-04-05T10:24:00', cliente: 'Ana Ruiz', pago: 'Tarjeta', receta: 'receta_ana.jpg', extraLabel: 'Consulta', extraAmount: 80, subtotal: 380, total: 460, items: [{ nombre: 'Omeprazol 20 mg', cantidad: 2, precio: 74 }, { nombre: 'Vitamina C 1 g', cantidad: 2, precio: 89 }] },
+      { id: 'sale3', folio: 'V-240403', fecha: '2026-04-06T08:40:00', cliente: 'Jorge Martínez', pago: 'Transferencia', receta: '', extraLabel: '', extraAmount: 0, subtotal: 92, total: 92, items: [{ nombre: 'Loratadina 10 mg', cantidad: 1, precio: 49 }, { nombre: 'Ibuprofeno 400 mg', cantidad: 1, precio: 43 }] }
     ]);
   }
 
