@@ -31,16 +31,20 @@ export function seedData() {
 
   if (!load(STORAGE_KEYS.INVENTORY, null)) {
     save(STORAGE_KEYS.INVENTORY, [
-      { id: 'inv1', sku: '75020001', barcode: '75020001', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 22, precio: 38, stock: 22, stockMinimo: 8, lote: 'PAR-2401', caducidad: '2026-11-20', visibleWeb: true, precioWeb: 40, categoriaWeb: 'Dolor y fiebre', destacadoWeb: true },
-      { id: 'inv2', sku: '75020002', barcode: '75020002', nombre: 'Omeprazol 20 mg', categoria: 'Original', tipo: 'Original', costo: 46, precio: 74, stock: 9, stockMinimo: 10, lote: 'OME-2405', caducidad: '2026-05-15', visibleWeb: true, precioWeb: 76, categoriaWeb: 'Estómago', destacadoWeb: false },
-      { id: 'inv3', sku: '75020003', barcode: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', tipo: 'Original', costo: 58, precio: 96, stock: 12, stockMinimo: 6, lote: 'JAR-2402', caducidad: '2026-04-20', visibleWeb: true, precioWeb: 99, categoriaWeb: 'Infantil', destacadoWeb: true },
-      { id: 'inv4', sku: '75020004', barcode: '75020004', nombre: 'Loratadina 10 mg', categoria: 'Genérico', tipo: 'Genérico', costo: 31, precio: 49, stock: 25, stockMinimo: 9, lote: 'LOR-2407', caducidad: '2027-01-08', visibleWeb: false, precioWeb: 49, categoriaWeb: 'Alergias', destacadoWeb: false },
-      { id: 'inv5', sku: '75020005', barcode: '75020005', nombre: 'Vitamina C 1 g', categoria: 'Vitaminas', tipo: 'Original', costo: 61, precio: 89, stock: 14, stockMinimo: 7, lote: 'VIT-2409', caducidad: '2026-03-22', visibleWeb: true, precioWeb: 92, categoriaWeb: 'Vitaminas', destacadoWeb: false }
+      { id: 'inv1', sku: '75020001', barcode: '75020001', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', tipo: 'Genérico', presentacion: 'Caja con 10 tabletas', marca: 'Neural Farma', descripcion: 'Analgésico y antipirético de uso común.', activo: true, costo: 22, precio: 38, stock: 22, stockMinimo: 8, lote: 'PAR-2401', caducidad: '2026-11-20', visibleWeb: true, precioWeb: 40, categoriaWeb: 'Dolor y fiebre', destacadoWeb: true },
+      { id: 'inv2', sku: '75020002', barcode: '75020002', nombre: 'Omeprazol 20 mg', categoria: 'Original', tipo: 'Original', presentacion: 'Caja con 14 cápsulas', marca: 'GastroCare', descripcion: 'Protector gástrico.', activo: true, costo: 46, precio: 74, stock: 9, stockMinimo: 10, lote: 'OME-2405', caducidad: '2026-05-15', visibleWeb: true, precioWeb: 76, categoriaWeb: 'Estómago', destacadoWeb: false },
+      { id: 'inv3', sku: '75020003', barcode: '75020003', nombre: 'Jarabe infantil', categoria: 'Pediatría', tipo: 'Original', presentacion: 'Frasco 120 ml', marca: 'Kids Care', descripcion: 'Jarabe infantil para alivio de síntomas.', activo: true, costo: 58, precio: 96, stock: 12, stockMinimo: 6, lote: 'JAR-2402', caducidad: '2026-04-20', visibleWeb: true, precioWeb: 99, categoriaWeb: 'Infantil', destacadoWeb: true },
+      { id: 'inv4', sku: '75020004', barcode: '75020004', nombre: 'Loratadina 10 mg', categoria: 'Genérico', tipo: 'Genérico', presentacion: 'Caja con 10 tabletas', marca: 'AlerFree', descripcion: 'Antihistamínico.', activo: true, costo: 31, precio: 49, stock: 25, stockMinimo: 9, lote: 'LOR-2407', caducidad: '2027-01-08', visibleWeb: false, precioWeb: 49, categoriaWeb: 'Alergias', destacadoWeb: false },
+      { id: 'inv5', sku: '75020005', barcode: '75020005', nombre: 'Vitamina C 1 g', categoria: 'Vitaminas', tipo: 'Original', presentacion: 'Tubo con 10 tabletas efervescentes', marca: 'VitaPlus', descripcion: 'Suplemento de vitamina C.', activo: true, costo: 61, precio: 89, stock: 14, stockMinimo: 7, lote: 'VIT-2409', caducidad: '2026-03-22', visibleWeb: true, precioWeb: 92, categoriaWeb: 'Vitaminas', destacadoWeb: false }
     ]);
   }
   else {
     const migratedInventory = load(STORAGE_KEYS.INVENTORY, []).map(item => ({
       ...item,
+      presentacion: item.presentacion || '',
+      marca: item.marca || '',
+      descripcion: item.descripcion || '',
+      activo: item.activo !== false,
       visibleWeb: Boolean(item.visibleWeb),
       precioWeb: Number(item.precioWeb ?? item.precio ?? 0),
       categoriaWeb: item.categoriaWeb || item.categoria || 'General',
