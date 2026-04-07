@@ -7,6 +7,8 @@ export const state = {
   inventoryQuery: '',
   inventoryStockFilter: 'todos',
   inventoryCaducidadFilter: 'todos',
+  inventoryWebFilter: 'todos',
+  inventoryActiveFilter: 'todos',
   inventoryAdjustmentId: '',
   bodegaQuery: '',
   comprasQuery: '',
