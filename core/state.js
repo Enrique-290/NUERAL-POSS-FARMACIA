@@ -20,5 +20,8 @@ export const state = {
   lastSale: '',
   webQuery: '',
   webCategory: 'Todas',
-  webCart: []
+  webCart: [],
+  mayoreoSalesQuery: '',
+  mayoreoCart: { items: [], cliente: '', pago: 'Transferencia', nota: '', extraLabel: '', extraAmount: 0 },
+  mayoreoLastSale: ''
 };
