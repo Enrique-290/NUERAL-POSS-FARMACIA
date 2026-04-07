@@ -2,6 +2,7 @@ import { STORAGE_KEYS } from '../../core/constants.js';
 import { load, save } from '../../core/storage.js';
 import { state } from '../../core/state.js';
 import { inventoryStatus, stockStatus, showToast } from '../../core/utils.js';
+import { addInventoryMovement, getProductMovements } from '../../core/movements.js';
 
 function getInventory() { return load(STORAGE_KEYS.INVENTORY, []); }
 function saveInventory(items) { save(STORAGE_KEYS.INVENTORY, items); }
@@ -15,6 +16,11 @@ function stats(items) {
 
 function editing() {
   return getInventory().find(i => i.id === state.editingInventoryId) || null;
+}
+
+function selectedMovementItem() {
+  const id = state.inventoryMovementProductId || state.inventoryAdjustmentId || state.editingInventoryId;
+  return getInventory().find(i => i.id === id) || null;
 }
 
 function adjustmentItem() {
@@ -43,19 +49,16 @@ function activeBadge(item) {
 }
 
 function filterInventory(items) {
-  const q = state.inventoryQuery.trim().toLowerCase();
+  const q = (state.inventoryQuery || '').trim().toLowerCase();
   return items.filter(item => {
     if (q && !matchesQuery(item, q)) return false;
-
     if (state.inventoryStockFilter === 'bajo' && !(item.stock <= item.stockMinimo)) return false;
     if (state.inventoryStockFilter === 'agotado' && !(item.stock <= 0)) return false;
     if (state.inventoryStockFilter === 'ok' && item.stock <= item.stockMinimo) return false;
-
     const cad = inventoryStatus(item).label;
     if (state.inventoryCaducidadFilter === 'vencido' && cad !== 'Vencido') return false;
     if (state.inventoryCaducidadFilter === 'proximo' && cad !== 'Próximo') return false;
     if (state.inventoryCaducidadFilter === 'vigente' && cad !== 'Vigente') return false;
-
     return true;
   });
 }
@@ -88,6 +91,7 @@ function inventoryRowsMarkup(items) {
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn btn-secondary small-btn edit-inventory-btn" data-id="${i.id}">Editar</button>
             <button class="btn btn-secondary small-btn adjust-inventory-btn" data-id="${i.id}">Ajustar</button>
+            <button class="btn btn-secondary small-btn moves-inventory-btn" data-id="${i.id}">Movs</button>
             <button class="btn btn-danger small-btn delete-inventory-btn" data-id="${i.id}">Borrar</button>
           </div>
         </td>
@@ -98,13 +102,8 @@ function inventoryRowsMarkup(items) {
 
 function renderAdjustmentCard(item) {
   if (!item) {
-    return `
-      <div class="status-item" style="margin-top:12px;">
-        <span class="muted">Selecciona un producto para hacer ajuste manual de stock.</span>
-      </div>
-    `;
+    return `<div class="status-item" style="margin-top:12px;"><span class="muted">Selecciona un producto para hacer ajuste manual de stock.</span></div>`;
   }
-
   return `
     <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line);">
       <h3 style="margin:0 0 6px;">Ajuste manual de stock</h3>
@@ -141,12 +140,52 @@ function renderAdjustmentCard(item) {
   `;
 }
 
+function renderMovementsCard(item) {
+  if (!item) {
+    return `<div class="status-item" style="margin-top:12px;"><span class="muted">Selecciona un producto y toca “Movs” para ver su historial.</span></div>`;
+  }
+  const moves = getProductMovements({ productoId: item.id, sku: item.sku, lote: item.lote }).slice(0, 12);
+  return `
+    <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line);">
+      <h3 style="margin:0 0 6px;">Historial de movimientos</h3>
+      <p class="muted" style="margin:0 0 12px;">Producto: <b>${item.nombre}</b> · SKU <b>${item.sku}</b></p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Cantidad</th>
+              <th>Usuario</th>
+              <th>Módulo</th>
+              <th>Nota</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${moves.map(m => `
+              <tr>
+                <td>${String(m.fecha || '').replace('T', ' ').slice(0, 16)}</td>
+                <td><span class="status-tag ${m.tipo === 'venta' || m.tipo === 'merma' ? 'danger' : m.tipo === 'ajuste' ? 'warn' : 'ok'}">${m.tipo}</span></td>
+                <td><b>${m.signo}${Math.abs(Number(m.cantidad || 0))}</b></td>
+                <td>${m.usuario || 'sistema'}</td>
+                <td>${m.modulo || 'inventario'}</td>
+                <td>${m.nota || '—'}</td>
+              </tr>
+            `).join('') || `<tr><td colspan="6" class="muted">Aún no hay movimientos para este producto.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 export function renderInventario() {
   const inventory = getInventory();
   const filtered = filterInventory(inventory);
   const s = stats(inventory);
   const item = editing();
   const adjust = adjustmentItem();
+  const movementItem = selectedMovementItem();
 
   return `
     <div class="page">
@@ -161,8 +200,8 @@ export function renderInventario() {
         <article class="card">
           <div class="toolbar-row">
             <div>
-              <h3 style="margin:0;">Inventario v2 · Etapa 2</h3>
-              <p class="muted" style="margin:6px 0 0;">Filtros de stock/caducidad y ajuste manual de existencias.</p>
+              <h3 style="margin:0;">Inventario v2 · Etapa 3</h3>
+              <p class="muted" style="margin:6px 0 0;">Historial de movimientos por producto y trazabilidad de compra, venta, ajuste y surtido.</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="btn btn-secondary" id="clearInventorySearchBtn">Limpiar</button>
@@ -173,7 +212,7 @@ export function renderInventario() {
           <div class="inventory-form-grid" style="margin-bottom:16px;">
             <div class="input-group" style="grid-column:1 / -1;">
               <label for="inventorySearch">Buscar producto</label>
-              <input id="inventorySearch" placeholder="Nombre, SKU, código, lote, categoría, marca..." value="${state.inventoryQuery}" />
+              <input id="inventorySearch" placeholder="Nombre, SKU, código, lote, categoría, marca..." value="${state.inventoryQuery || ''}" />
             </div>
             <div class="input-group">
               <label for="inventoryStockFilter">Filtro stock</label>
@@ -211,7 +250,7 @@ export function renderInventario() {
                   <th>Acciones</th>
                 </tr>
               </thead>
-              <tbody id="inventoryRows">
+              <tbody>
                 ${inventoryRowsMarkup(filtered)}
               </tbody>
             </table>
@@ -220,7 +259,7 @@ export function renderInventario() {
 
         <article class="card">
           <h3>${item ? 'Editar producto' : 'Alta de producto'}</h3>
-          <p class="muted">Etapa 2: filtros avanzados y ajuste manual de stock.</p>
+          <p class="muted">Etapa 3: ahora el inventario ya genera historial de movimientos por producto.</p>
           <form id="inventoryForm" class="inventory-form-grid" style="margin-top:14px;">
             <input type="hidden" id="inventoryId" value="${item?.id || ''}" />
             <div class="input-group"><label for="invNombre">Nombre</label><input id="invNombre" value="${item?.nombre || ''}" required /></div>
@@ -249,6 +288,7 @@ export function renderInventario() {
             <div class="status-item"><span>Rojo</span><span class="status-tag danger">Vencido / stock bajo</span></div>
           </div>
           ${renderAdjustmentCard(adjust)}
+          ${renderMovementsCard(movementItem)}
         </article>
       </section>
     </div>
@@ -263,7 +303,6 @@ function validatePayload(payload, items) {
   if (payload.stockMinimo < 0) return 'El stock mínimo no puede ser negativo.';
   if (payload.costo < 0 || payload.precio < 0) return 'Costo y precio deben ser mayores o iguales a cero.';
   if (payload.precio < payload.costo) return 'El precio no puede ser menor al costo.';
-
   const repeatedSku = items.find(i => i.sku === payload.sku && i.id !== payload.id);
   if (repeatedSku) return 'Ya existe otro producto con ese SKU.';
   const repeatedBarcode = items.find(i => i.barcode === payload.barcode && i.id !== payload.id);
@@ -271,29 +310,44 @@ function validatePayload(payload, items) {
   return '';
 }
 
-function refreshInventoryTableOnly(render) {
-  const rows = document.getElementById('inventoryRows');
-  if (!rows) return;
-  rows.innerHTML = inventoryRowsMarkup(filterInventory(getInventory()));
-  bindInventoryRowButtons(render);
-}
-
 function bindInventoryRowButtons(render) {
   document.querySelectorAll('.edit-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
     state.editingInventoryId = btn.dataset.id;
     state.inventoryAdjustmentId = '';
+    state.inventoryMovementProductId = btn.dataset.id;
     render();
   }));
 
   document.querySelectorAll('.adjust-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
     state.inventoryAdjustmentId = btn.dataset.id;
+    state.inventoryMovementProductId = btn.dataset.id;
+    render();
+  }));
+
+  document.querySelectorAll('.moves-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
+    state.inventoryMovementProductId = btn.dataset.id;
     render();
   }));
 
   document.querySelectorAll('.delete-inventory-btn').forEach(btn => btn.addEventListener('click', () => {
+    const deleted = getInventory().find(i => i.id === btn.dataset.id);
     saveInventory(getInventory().filter(i => i.id !== btn.dataset.id));
     if (state.editingInventoryId === btn.dataset.id) state.editingInventoryId = '';
     if (state.inventoryAdjustmentId === btn.dataset.id) state.inventoryAdjustmentId = '';
+    if (state.inventoryMovementProductId === btn.dataset.id) state.inventoryMovementProductId = '';
+    if (deleted) {
+      addInventoryMovement({
+        productoId: deleted.id,
+        producto: deleted.nombre,
+        sku: deleted.sku,
+        lote: deleted.lote,
+        tipo: 'baja',
+        cantidad: deleted.stock,
+        signo: '-',
+        modulo: 'inventario',
+        nota: 'Producto eliminado del inventario'
+      });
+    }
     render();
     showToast('Producto eliminado.');
   }));
@@ -302,17 +356,17 @@ function bindInventoryRowButtons(render) {
 export function bindInventario(render) {
   document.getElementById('inventorySearch')?.addEventListener('input', e => {
     state.inventoryQuery = e.target.value;
-    refreshInventoryTableOnly(render);
+    render();
   });
 
   document.getElementById('inventoryStockFilter')?.addEventListener('change', e => {
     state.inventoryStockFilter = e.target.value;
-    refreshInventoryTableOnly(render);
+    render();
   });
 
   document.getElementById('inventoryCaducidadFilter')?.addEventListener('change', e => {
     state.inventoryCaducidadFilter = e.target.value;
-    refreshInventoryTableOnly(render);
+    render();
   });
 
   document.getElementById('clearInventorySearchBtn')?.addEventListener('click', () => {
@@ -325,6 +379,7 @@ export function bindInventario(render) {
   document.getElementById('newInventoryBtn')?.addEventListener('click', () => {
     state.editingInventoryId = '';
     state.inventoryAdjustmentId = '';
+    state.inventoryMovementProductId = '';
     render();
   });
 
@@ -349,14 +404,26 @@ export function bindInventario(render) {
     if (qty < 0) return showToast('La cantidad no puede ser negativa.');
 
     let nextStock = item.stock;
-    if (mode === 'sumar') nextStock = item.stock + qty;
-    if (mode === 'restar') nextStock = item.stock - qty;
-    if (mode === 'fijar') nextStock = qty;
-
+    let delta = 0;
+    if (mode === 'sumar') { nextStock = item.stock + qty; delta = qty; }
+    if (mode === 'restar') { nextStock = item.stock - qty; delta = -qty; }
+    if (mode === 'fijar') { nextStock = qty; delta = qty - item.stock; }
     if (nextStock < 0) return showToast('El ajuste dejaría stock negativo.');
 
     saveInventory(getInventory().map(i => i.id === item.id ? { ...i, stock: nextStock } : i));
+    addInventoryMovement({
+      productoId: item.id,
+      producto: item.nombre,
+      sku: item.sku,
+      lote: item.lote,
+      tipo: reason === 'Merma' ? 'merma' : 'ajuste',
+      cantidad: Math.abs(delta),
+      signo: delta >= 0 ? '+' : '-',
+      modulo: 'inventario',
+      nota: `${reason} · modo ${mode} · stock ${item.stock} → ${nextStock}`
+    });
     state.inventoryAdjustmentId = item.id;
+    state.inventoryMovementProductId = item.id;
     render();
     showToast(`Ajuste aplicado: ${reason}. Nuevo stock ${nextStock}.`);
   });
@@ -403,7 +470,21 @@ export function bindInventario(render) {
     };
 
     saveInventory(exists ? items.map(i => i.id === payload.id ? mergedPayload : i) : [...items, mergedPayload]);
+    if (!exists) {
+      addInventoryMovement({
+        productoId: mergedPayload.id,
+        producto: mergedPayload.nombre,
+        sku: mergedPayload.sku,
+        lote: mergedPayload.lote,
+        tipo: 'alta',
+        cantidad: mergedPayload.stock,
+        signo: '+',
+        modulo: 'inventario',
+        nota: 'Alta inicial de producto'
+      });
+    }
     state.editingInventoryId = '';
+    state.inventoryMovementProductId = mergedPayload.id;
     render();
     showToast(exists ? 'Producto actualizado.' : 'Producto guardado.');
   });

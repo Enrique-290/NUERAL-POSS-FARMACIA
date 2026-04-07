@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   SESSION: 'neural_pos_session',
   CONFIG: 'neural_pos_config',
   INVENTORY: 'neural_pos_inventory',
+  INVENTORY_MOVEMENTS: 'neural_pos_inventory_movements',
   BODEGA: 'neural_pos_bodega',
   PURCHASES: 'neural_pos_purchases',
   EXPENSES: 'neural_pos_expenses',

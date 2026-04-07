@@ -2,6 +2,7 @@ import { STORAGE_KEYS } from '../../core/constants.js';
 import { load, save } from '../../core/storage.js';
 import { state } from '../../core/state.js';
 import { inventoryStatus, showToast } from '../../core/utils.js';
+import { addInventoryMovement } from '../../core/movements.js';
 
 function getPurchases() { return load(STORAGE_KEYS.PURCHASES, []); }
 function savePurchases(items) { save(STORAGE_KEYS.PURCHASES, items); }

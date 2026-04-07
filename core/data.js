@@ -54,6 +54,11 @@ export function seedData() {
   }
 
 
+  if (!load(STORAGE_KEYS.INVENTORY_MOVEMENTS, null)) {
+    save(STORAGE_KEYS.INVENTORY_MOVEMENTS, []);
+  }
+
+
   if (!load(STORAGE_KEYS.BODEGA, null)) {
     save(STORAGE_KEYS.BODEGA, [
       { id: 'bod1', sku: '75020001', nombre: 'Paracetamol 500 mg', categoria: 'Genérico', stock: 120, stockMinimo: 40, lote: 'PAR-B2401', caducidad: '2026-12-10' },

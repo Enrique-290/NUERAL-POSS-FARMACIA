@@ -2,6 +2,7 @@ import { STORAGE_KEYS } from '../../core/constants.js';
 import { load, save } from '../../core/storage.js';
 import { state } from '../../core/state.js';
 import { inventoryStatus, stockStatus, showToast } from '../../core/utils.js';
+import { addInventoryMovement } from '../../core/movements.js';
 
 function getBodega() { return load(STORAGE_KEYS.BODEGA, []); }
 function saveBodega(items) { save(STORAGE_KEYS.BODEGA, items); }
@@ -100,6 +101,18 @@ export function bindBodega(render) {
     }
     saveInventory(inventory);
     saveBodega(bodega.map(x => x.id === id ? { ...x, stock: x.stock - qty } : x));
+    const target = inventory.find(x => x.sku === item.sku || x.nombre === item.nombre);
+    addInventoryMovement({
+      productoId: target?.id || '',
+      producto: item.nombre,
+      sku: item.sku,
+      lote: item.lote,
+      tipo: 'surtido',
+      cantidad: qty,
+      signo: '+',
+      modulo: 'bodega',
+      nota: 'Surtido desde bodega'
+    });
     render();
     showToast(`Se movieron ${qty} piezas a inventario.`);
   }));

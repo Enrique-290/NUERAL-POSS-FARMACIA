@@ -14,6 +14,7 @@ export const state = {
   clientsQuery: '',
   selectedManagedUserId: '',
   editingInventoryId: '',
+  inventoryMovementProductId: '',
   editingBodegaId: '',
   editingCompraId: '',
   editingGastoId: '',
