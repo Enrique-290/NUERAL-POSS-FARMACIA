@@ -4,12 +4,11 @@ export const STORAGE_KEYS = {
   CONFIG: 'neural_pos_config',
   INVENTORY: 'neural_pos_inventory',
   BODEGA: 'neural_pos_bodega',
-  CLIENTES: 'neural_pos_clientes',
-  HISTORIAL: 'neural_pos_historial',
-  WEB: 'neural_pos_web',
+  CLIENTS: 'neural_pos_clients',
+  SALES: 'neural_pos_sales',
   MAYOREO_INVENTORY: 'neural_pos_mayoreo_inventory',
-  MAYOREO_CLIENTES: 'neural_pos_mayoreo_clientes',
-  MAYOREO_HISTORIAL: 'neural_pos_mayoreo_historial'
+  MAYOREO_CLIENTS: 'neural_pos_mayoreo_clients',
+  MAYOREO_SALES: 'neural_pos_mayoreo_sales'
 };
 
 export const MODULES = [
@@ -28,5 +27,5 @@ export const MODULES = [
   { key: 'mayoreo_clientes', label: 'Clientes mayoreo', icon: '👥', group: 'Mayoreo' },
   { key: 'mayoreo_historial', label: 'Historial mayoreo', icon: '📚', group: 'Mayoreo' },
   { key: 'mayoreo_reportes', label: 'Reporte mayoreo', icon: '📑', group: 'Mayoreo' },
-  { key: 'users', label: 'Usuarios y permisos', icon: '🔐', group: 'Administración' }
+  { key: 'users_admin', label: 'Usuarios y permisos', icon: '🔐', group: 'Administración' }
 ];
