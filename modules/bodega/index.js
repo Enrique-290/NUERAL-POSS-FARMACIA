@@ -32,8 +32,9 @@ function normalizeBodega(item = {}) {
 }
 
 function allBodega() {
-  const items = getBodega().map(normalizeBodega);
-  const migrated = JSON.stringify(items) !== JSON.stringify(getBodega());
+  const source = getBodega();
+  const items = source.map(normalizeBodega);
+  const migrated = JSON.stringify(items) !== JSON.stringify(source);
   if (migrated) saveBodega(items);
   return items;
 }
@@ -53,7 +54,16 @@ function stats(items) {
 
 function applyFilters(items) {
   const q = (state.bodegaQuery || '').trim().toLowerCase();
-  let out = !q ? items : items.filter(item => [item.nombre, item.sku, item.barcode, item.lote, item.categoria, item.presentacion, item.marca].join(' ').toLowerCase().includes(q));
+  let out = !q ? items : items.filter(item => [
+    item.nombre,
+    item.sku,
+    item.barcode,
+    item.lote,
+    item.categoria,
+    item.presentacion,
+    item.marca,
+    item.descripcion
+  ].join(' ').toLowerCase().includes(q));
   if (state.bodegaStockFilter === 'bajo') out = out.filter(i => i.stock <= i.stockMinimo && i.stock > 0);
   if (state.bodegaStockFilter === 'agotado') out = out.filter(i => i.stock <= 0);
   if (state.bodegaStockFilter === 'ok') out = out.filter(i => i.stock > i.stockMinimo);
@@ -64,7 +74,162 @@ function applyFilters(items) {
 }
 
 function getBodegaMovements(sku = '') {
-  return getInventoryMovements().filter(m => m.modulo === 'bodega' || m.tipo === 'surtido').filter(m => !sku || m.sku === sku).slice(0, 20);
+  return getInventoryMovements()
+    .filter(m => m.modulo === 'bodega' || m.tipo === 'surtido')
+    .filter(m => !sku || m.sku === sku)
+    .slice(0, 20);
+}
+
+function rowActionsMenu(i) {
+  const open = state.bodegaOpenMenuId === i.id;
+  return `
+    <div class="actions-menu-wrap" data-menu-wrap="${i.id}" style="position:relative; display:inline-block;">
+      <button class="btn btn-secondary small-btn menu-dots-btn" data-id="${i.id}" title="Acciones" style="min-width:38px; padding:8px 10px;">⋮</button>
+      ${open ? `
+        <div class="actions-menu-dropdown" style="position:absolute; right:0; top:40px; width:190px; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:8px; z-index:20;">
+          <button class="menu-action-btn" data-action="edit" data-id="${i.id}">Editar</button>
+          <button class="menu-action-btn" data-action="movs" data-sku="${i.sku}">Ver movimientos</button>
+          <button class="menu-action-btn" data-action="toggle" data-id="${i.id}">${i.activo ? 'Inactivar' : 'Activar'}</button>
+          <button class="menu-action-btn menu-action-danger" data-action="delete" data-id="${i.id}">Borrar</button>
+        </div>` : ''}
+    </div>
+  `;
+}
+
+function renderRows(items) {
+  return items.map(i => {
+    const cad = inventoryStatus(i);
+    const stk = stockStatus(i);
+    return `<tr>
+      <td><div style="display:flex; gap:12px; align-items:center;"><div class="product-thumb">${i.nombre.slice(0,2).toUpperCase()}</div><div><div style="font-weight:700;">${i.nombre}</div><div class="muted" style="font-size:.85rem;">${i.categoria}${i.marca ? ` · ${i.marca}` : ''}</div></div></div></td>
+      <td>${i.sku}</td>
+      <td><span class="status-tag ${stk.className}">${i.stock}</span></td>
+      <td>${i.stockMinimo}</td>
+      <td>${i.lote}</td>
+      <td>${i.caducidad}</td>
+      <td><span class="status-tag ${cad.className}">${cad.label}</span></td>
+      <td><div style="display:flex; gap:8px; align-items:center;"><input class="surte-qty" data-id="${i.id}" type="number" min="1" max="${i.stock}" value="1" style="width:74px; padding:9px 10px;" /><button class="btn btn-primary small-btn surte-btn" data-id="${i.id}">Mover</button></div></td>
+      <td>${rowActionsMenu(i)}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" class="muted">No se encontraron productos.</td></tr>`;
+}
+
+function renderMovementsPanel(sku = '') {
+  const movements = getBodegaMovements(sku);
+  return movements.length
+    ? movements.map(m => `<div class="status-item"><div><div style="font-weight:700;">${m.producto || 'Producto'}</div><div class="muted" style="font-size:.85rem;">${new Date(m.fecha).toLocaleString('es-MX')} · ${m.tipo} · ${m.modulo}</div></div><div style="text-align:right;"><div class="status-tag ${m.signo === '-' ? 'danger' : 'soft-blue'}">${m.signo}${m.cantidad}</div><div class="muted" style="font-size:.82rem; margin-top:4px;">${m.nota || ''}</div></div></div>`).join('')
+    : `<div class="status-item"><span class="muted">Aún no hay movimientos para este producto.</span></div>`;
+}
+
+function refreshBodegaTableView() {
+  const items = allBodega();
+  const filtered = applyFilters(items);
+  const tbody = document.getElementById('bodegaTableBody');
+  if (tbody) tbody.innerHTML = renderRows(filtered);
+  const summary = document.getElementById('bodegaFilterSummary');
+  if (summary) summary.textContent = `${filtered.length} producto(s) visibles`;
+  if (!state.bodegaMovementSku && filtered[0]?.sku) state.bodegaMovementSku = filtered[0].sku;
+  attachDynamicRowEvents();
+}
+
+function closeMenus() {
+  if (state.bodegaOpenMenuId) {
+    state.bodegaOpenMenuId = '';
+    refreshBodegaTableView();
+  }
+}
+
+function handleMenuAction(action, id, sku, render) {
+  if (action === 'edit') {
+    state.editingBodegaId = id;
+    state.bodegaOpenMenuId = '';
+    render();
+    return;
+  }
+  if (action === 'movs') {
+    state.bodegaMovementSku = sku;
+    state.bodegaOpenMenuId = '';
+    const pill = document.getElementById('bodegaMovSku');
+    if (pill) pill.textContent = sku || 'Sin producto seleccionado';
+    const list = document.getElementById('bodegaMovementsList');
+    if (list) list.innerHTML = renderMovementsPanel(sku);
+    refreshBodegaTableView();
+    return;
+  }
+  if (action === 'toggle') {
+    saveBodega(allBodega().map(x => x.id === id ? { ...x, activo: !x.activo } : x));
+    state.bodegaOpenMenuId = '';
+    render();
+    showToast('Estado del producto actualizado.');
+    return;
+  }
+  if (action === 'delete') {
+    saveBodega(allBodega().filter(i => i.id !== id));
+    if (state.editingBodegaId === id) state.editingBodegaId = '';
+    state.bodegaOpenMenuId = '';
+    render();
+    showToast('Producto eliminado de bodega.');
+  }
+}
+
+function attachDynamicRowEvents(render) {
+  document.querySelectorAll('.menu-dots-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = btn.dataset.id;
+    state.bodegaOpenMenuId = state.bodegaOpenMenuId === id ? '' : id;
+    refreshBodegaTableView();
+  }));
+
+  document.querySelectorAll('.menu-action-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    handleMenuAction(btn.dataset.action, btn.dataset.id, btn.dataset.sku, render);
+  }));
+
+  document.querySelectorAll('.surte-btn').forEach(btn => btn.addEventListener('click', () => {
+    const id = btn.dataset.id;
+    const qtyInput = document.querySelector(`.surte-qty[data-id="${id}"]`);
+    const qty = Math.max(1, Number(qtyInput?.value || 1));
+    const bodega = allBodega();
+    const item = bodega.find(i => i.id === id);
+    if (!item) return;
+    if (qty > item.stock) return showToast('La cantidad supera el stock en bodega.');
+
+    const inventory = getInventory().map(i => ({ ...i }));
+    const invIndex = inventory.findIndex(i => i.sku === item.sku && i.lote === item.lote);
+    if (invIndex >= 0) {
+      inventory[invIndex] = { ...inventory[invIndex], stock: Number(inventory[invIndex].stock) + qty };
+    } else {
+      inventory.push({
+        id: `inv_${Date.now()}`,
+        sku: item.sku,
+        barcode: item.barcode || item.sku,
+        nombre: item.nombre,
+        categoria: item.categoria,
+        tipo: item.tipo || 'Genérico',
+        presentacion: item.presentacion || '',
+        marca: item.marca || '',
+        descripcion: item.descripcion || '',
+        activo: true,
+        costo: item.costo || 0,
+        precio: item.precio || 0,
+        stock: qty,
+        stockMinimo: item.stockMinimo,
+        lote: item.lote,
+        caducidad: item.caducidad,
+        visibleWeb: false,
+        precioWeb: item.precio || 0,
+        categoriaWeb: item.categoria || 'General',
+        destacadoWeb: false
+      });
+    }
+    saveInventory(inventory);
+    saveBodega(bodega.map(x => x.id === id ? { ...x, stock: Math.max(0, Number(x.stock) - qty) } : x));
+    const target = inventory.find(x => x.sku === item.sku && x.lote === item.lote) || inventory.find(x => x.sku === item.sku);
+    addInventoryMovement({ productoId: target?.id || '', producto: item.nombre, sku: item.sku, lote: item.lote, tipo: 'surtido', cantidad: qty, signo: '+', modulo: 'bodega', nota: 'Surtido desde bodega' });
+    state.bodegaMovementSku = item.sku;
+    render();
+    showToast(`Se movieron ${qty} piezas a inventario.`);
+  }));
 }
 
 export function renderBodega() {
@@ -73,7 +238,6 @@ export function renderBodega() {
   const s = stats(items);
   const item = editing();
   const movementSku = state.bodegaMovementSku || item?.sku || filtered[0]?.sku || items[0]?.sku || '';
-  const movements = getBodegaMovements(movementSku);
 
   return `
     <div class="page">
@@ -88,7 +252,7 @@ export function renderBodega() {
         <article class="card">
           <div class="toolbar-row">
             <div>
-              <h3 style="margin:0;">Bodega PRO v2</h3>
+              <h3 style="margin:0;">Bodega PRO v2.1</h3>
               <p class="muted" style="margin:6px 0 0;">Reserva separada, surtido a inventario y control de trazabilidad.</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -103,22 +267,8 @@ export function renderBodega() {
             <div class="input-group"><label for="bodegaCaducidadFilter">Filtro caducidad</label><select id="bodegaCaducidadFilter"><option value="todos" ${state.bodegaCaducidadFilter === 'todos' ? 'selected' : ''}>Todos</option><option value="vigente" ${state.bodegaCaducidadFilter === 'vigente' ? 'selected' : ''}>Vigentes</option><option value="proximo" ${state.bodegaCaducidadFilter === 'proximo' ? 'selected' : ''}>Próximos</option><option value="vencido" ${state.bodegaCaducidadFilter === 'vencido' ? 'selected' : ''}>Vencidos</option></select></div>
           </div>
 
-          <div class="table-wrap"><table><thead><tr><th>Producto</th><th>SKU</th><th>Stock</th><th>Mínimo</th><th>Lote</th><th>Caducidad</th><th>Estado</th><th>Surtir</th><th>Acciones</th></tr></thead><tbody>
-            ${filtered.map(i => {
-              const cad = inventoryStatus(i); const stk = stockStatus(i);
-              return `<tr>
-                <td><div style="display:flex; gap:12px; align-items:center;"><div class="product-thumb">${i.nombre.slice(0,2).toUpperCase()}</div><div><div style="font-weight:700;">${i.nombre}</div><div class="muted" style="font-size:.85rem;">${i.categoria}${i.marca ? ` · ${i.marca}` : ''}</div></div></div></td>
-                <td>${i.sku}</td>
-                <td><span class="status-tag ${stk.className}">${i.stock}</span></td>
-                <td>${i.stockMinimo}</td>
-                <td>${i.lote}</td>
-                <td>${i.caducidad}</td>
-                <td><span class="status-tag ${cad.className}">${cad.label}</span></td>
-                <td><div style="display:flex; gap:8px; align-items:center;"><input class="surte-qty" data-id="${i.id}" type="number" min="1" max="${i.stock}" value="1" style="width:74px; padding:9px 10px;" /><button class="btn btn-primary small-btn surte-btn" data-id="${i.id}">Mover</button></div></td>
-                <td><div style="display:flex; gap:8px; flex-wrap:wrap;"><button class="btn btn-secondary small-btn edit-bodega-btn" data-id="${i.id}">Editar</button><button class="btn btn-secondary small-btn movs-bodega-btn" data-sku="${i.sku}">Movs</button><button class="btn btn-danger small-btn delete-bodega-btn" data-id="${i.id}">Borrar</button></div></td>
-              </tr>`;
-            }).join('') || `<tr><td colspan="9" class="muted">No se encontraron productos.</td></tr>`}
-          </tbody></table></div>
+          <div class="muted" id="bodegaFilterSummary" style="margin:-4px 0 12px;">${filtered.length} producto(s) visibles</div>
+          <div class="table-wrap"><table><thead><tr><th>Producto</th><th>SKU</th><th>Stock</th><th>Mínimo</th><th>Lote</th><th>Caducidad</th><th>Estado</th><th>Surtir</th><th>Acciones</th></tr></thead><tbody id="bodegaTableBody">${renderRows(filtered)}</tbody></table></div>
         </article>
 
         <article class="card">
@@ -149,10 +299,8 @@ export function renderBodega() {
           </div>
 
           <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--line);">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;"><h3 style="margin:0;">Movimientos de bodega</h3><div class="pill" style="padding:8px 12px;">${movementSku || 'Sin producto seleccionado'}</div></div>
-            <div class="status-list">
-              ${movements.length ? movements.map(m => `<div class="status-item"><div><div style="font-weight:700;">${m.producto || 'Producto'}</div><div class="muted" style="font-size:.85rem;">${new Date(m.fecha).toLocaleString('es-MX')} · ${m.tipo} · ${m.modulo}</div></div><div style="text-align:right;"><div class="status-tag ${m.signo === '-' ? 'danger' : 'soft-blue'}">${m.signo}${m.cantidad}</div><div class="muted" style="font-size:.82rem; margin-top:4px;">${m.nota || ''}</div></div></div>`).join('') : `<div class="status-item"><span class="muted">Aún no hay movimientos para este producto.</span></div>`}
-            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;"><h3 style="margin:0;">Movimientos de bodega</h3><div class="pill" id="bodegaMovSku" style="padding:8px 12px;">${movementSku || 'Sin producto seleccionado'}</div></div>
+            <div class="status-list" id="bodegaMovementsList">${renderMovementsPanel(movementSku)}</div>
           </div>
         </article>
       </section>
@@ -161,20 +309,21 @@ export function renderBodega() {
 }
 
 export function bindBodega(render) {
-  document.getElementById('bodegaSearch')?.addEventListener('input', e => { state.bodegaQuery = e.target.value; render(); });
+  document.getElementById('bodegaSearch')?.addEventListener('input', e => {
+    state.bodegaQuery = e.target.value;
+    refreshBodegaTableView();
+  });
   document.getElementById('bodegaStockFilter')?.addEventListener('change', e => { state.bodegaStockFilter = e.target.value; render(); });
   document.getElementById('bodegaCaducidadFilter')?.addEventListener('change', e => { state.bodegaCaducidadFilter = e.target.value; render(); });
-  document.getElementById('clearBodegaSearchBtn')?.addEventListener('click', () => { state.bodegaQuery = ''; state.bodegaStockFilter = 'todos'; state.bodegaCaducidadFilter = 'todos'; render(); });
+  document.getElementById('clearBodegaSearchBtn')?.addEventListener('click', () => {
+    state.bodegaQuery = '';
+    state.bodegaStockFilter = 'todos';
+    state.bodegaCaducidadFilter = 'todos';
+    state.bodegaOpenMenuId = '';
+    render();
+  });
   document.getElementById('newBodegaBtn')?.addEventListener('click', () => { state.editingBodegaId = ''; render(); });
   document.getElementById('resetBodegaBtn')?.addEventListener('click', () => { state.editingBodegaId = ''; render(); });
-  document.querySelectorAll('.edit-bodega-btn').forEach(btn => btn.addEventListener('click', () => { state.editingBodegaId = btn.dataset.id; render(); }));
-  document.querySelectorAll('.movs-bodega-btn').forEach(btn => btn.addEventListener('click', () => { state.bodegaMovementSku = btn.dataset.sku; render(); }));
-  document.querySelectorAll('.delete-bodega-btn').forEach(btn => btn.addEventListener('click', () => {
-    saveBodega(allBodega().filter(i => i.id !== btn.dataset.id));
-    if (state.editingBodegaId === btn.dataset.id) state.editingBodegaId = '';
-    render();
-    showToast('Producto eliminado de bodega.');
-  }));
 
   document.getElementById('saveBodegaBtn')?.addEventListener('click', () => {
     const payload = normalizeBodega({
@@ -214,49 +363,6 @@ export function bindBodega(render) {
     showToast(exists ? 'Producto de bodega actualizado.' : 'Producto agregado a bodega.');
   });
 
-  document.querySelectorAll('.surte-btn').forEach(btn => btn.addEventListener('click', () => {
-    const id = btn.dataset.id;
-    const qtyInput = document.querySelector(`.surte-qty[data-id="${id}"]`);
-    const qty = Math.max(1, Number(qtyInput?.value || 1));
-    const bodega = allBodega();
-    const item = bodega.find(i => i.id === id);
-    if (!item) return;
-    if (qty > item.stock) return showToast('La cantidad supera el stock en bodega.');
-
-    const inventory = load(STORAGE_KEYS.INVENTORY, []).map(i => ({ ...i }));
-    const invIndex = inventory.findIndex(i => i.sku === item.sku && i.lote === item.lote);
-    if (invIndex >= 0) {
-      inventory[invIndex] = { ...inventory[invIndex], stock: Number(inventory[invIndex].stock) + qty };
-    } else {
-      inventory.push({
-        id: `inv_${Date.now()}`,
-        sku: item.sku,
-        barcode: item.barcode || item.sku,
-        nombre: item.nombre,
-        categoria: item.categoria,
-        tipo: item.tipo || 'Genérico',
-        presentacion: item.presentacion || '',
-        marca: item.marca || '',
-        descripcion: item.descripcion || '',
-        activo: true,
-        costo: item.costo || 0,
-        precio: item.precio || 0,
-        stock: qty,
-        stockMinimo: item.stockMinimo,
-        lote: item.lote,
-        caducidad: item.caducidad,
-        visibleWeb: false,
-        precioWeb: item.precio || 0,
-        categoriaWeb: item.categoria || 'General',
-        destacadoWeb: false
-      });
-    }
-    saveInventory(inventory);
-    saveBodega(bodega.map(x => x.id === id ? { ...x, stock: Math.max(0, Number(x.stock) - qty) } : x));
-    const target = inventory.find(x => x.sku === item.sku && x.lote === item.lote) || inventory.find(x => x.sku === item.sku);
-    addInventoryMovement({ productoId: target?.id || '', producto: item.nombre, sku: item.sku, lote: item.lote, tipo: 'surtido', cantidad: qty, signo: '+', modulo: 'bodega', nota: 'Surtido desde bodega' });
-    state.bodegaMovementSku = item.sku;
-    render();
-    showToast(`Se movieron ${qty} piezas a inventario.`);
-  }));
+  attachDynamicRowEvents(render);
+  document.addEventListener('click', closeMenus, { once: true });
 }
