@@ -69,7 +69,7 @@ function refreshCartFromInventory() {
 
 export function renderVentas() {
   refreshCartFromInventory();
-  const filtered = getFilteredProducts();
+  const filtered = getInventoryProducts();
   const { subtotal, extra, total } = totals();
 
   return `
@@ -94,7 +94,7 @@ export function renderVentas() {
 
           <div class="grid grid-3" style="gap:14px;">
             ${filtered.map(p => `
-              <article class="card" style="padding:14px; border-radius:16px;">
+              <article class="card product-card" data-product-search="${[p.nombre,p.sku,p.barcode,p.lote,p.categoria,p.presentacion,p.marca,p.descripcion].filter(Boolean).join(' ').toLowerCase().replace(/"/g,'&quot;')}" style="padding:14px; border-radius:16px;">
                 <div style="display:flex; justify-content:space-between; gap:10px; align-items:start;">
                   <div>
                     <div style="font-weight:800;">${p.nombre}</div>
@@ -109,7 +109,8 @@ export function renderVentas() {
                   ${Number(p.stock || 0) <= 0 ? 'Sin stock' : 'Agregar'}
                 </button>
               </article>
-            `).join('') || `<article class="card"><div class="muted">No se encontraron productos del inventario. Revisa que estén activos y dados de alta.</div></article>`}
+            `).join('')}
+            <article class="card" id="salesEmptyState" style="display:none;"><div class="muted">No se encontraron productos del inventario. Revisa que estén activos y dados de alta.</div></article>
           </div>
         </article>
 
@@ -177,15 +178,35 @@ export function renderVentas() {
   `;
 }
 
+
+function filterSalesCards() {
+  const q = String(state.salesQuery || '').trim().toLowerCase();
+  const cards = document.querySelectorAll('.product-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const haystack = String(card.dataset.productSearch || '').toLowerCase();
+    const show = !q || haystack.includes(q);
+    card.style.display = show ? '' : 'none';
+    if (show) visible += 1;
+  });
+  const emptyState = document.getElementById('salesEmptyState');
+  if (emptyState) {
+    emptyState.style.display = visible ? 'none' : '';
+  }
+}
+
 export function bindVentas(render) {
-  document.getElementById('salesSearch')?.addEventListener('input', e => {
+  const salesSearch = document.getElementById('salesSearch');
+  salesSearch?.addEventListener('input', e => {
     state.salesQuery = e.target.value;
-    render();
+    filterSalesCards();
   });
 
   document.getElementById('clearSearchBtn')?.addEventListener('click', () => {
     state.salesQuery = '';
-    render();
+    if (salesSearch) salesSearch.value = '';
+    filterSalesCards();
+    salesSearch?.focus();
   });
 
   document.getElementById('newSaleBtn')?.addEventListener('click', () => {
@@ -193,6 +214,8 @@ export function bindVentas(render) {
     render();
     showToast('Venta nueva lista.');
   });
+
+  filterSalesCards();
 
   document.querySelectorAll('.add-product-btn').forEach(btn => btn.addEventListener('click', () => {
     const p = getInventoryProducts().find(x => x.id === btn.dataset.id);
